@@ -15,6 +15,7 @@
             --down: #ff3b3b;
             --text-main: #e0e0e0;
             --text-dim: #888;
+            --whatsapp: #25D366;
         }
 
         body {
@@ -129,6 +130,49 @@
         .back-nav { display: block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; text-align: center; }
         .back-nav:hover { color: var(--accent); }
 
+        /* NEW: Infrastructure CTA Section */
+        .infra-section {
+            grid-column: 1 / -1;
+            background: linear-gradient(90deg, #0c111a 0%, #001f22 100%);
+            border: 1px solid var(--accent);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .infra-section h2 { 
+            color: #fff; 
+            font-size: 1.8rem; 
+            margin-bottom: 15px; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+        }
+        .infra-section p { 
+            color: var(--text-dim); 
+            max-width: 600px; 
+            margin: 0 auto 25px; 
+        }
+        .btn-whatsapp {
+            background: var(--whatsapp);
+            color: #fff;
+            padding: 15px 35px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+        .btn-whatsapp:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
+            background: #1ebe57;
+        }
+
         /* Mobile Adjustments */
         @media (max-width: 950px) {
             .dashboard { grid-template-columns: 1fr; }
@@ -140,6 +184,7 @@
             td, th { padding: 12px 8px; font-size: 0.8rem; }
             .btn-action { padding: 15px; font-size: 0.9rem; }
             .calc-val { font-size: 1.3rem; }
+            .infra-section h2 { font-size: 1.4rem; }
         }
     </style>
 </head>
@@ -235,6 +280,17 @@
             <a href="https://vlsfo.com" class="back-nav">← Back to Intelligence Center (VLSFO.COM)</a>
         </div>
     </aside>
+
+    <section class="infra-section">
+        <h2>Own the Infrastructure Now</h2>
+        <p>Take control of your maritime energy assets and scale your bunkering operations with our elite digital infrastructure.</p>
+        <a href="https://wa.me/218917021437" class="btn-whatsapp" target="_blank">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.51 16.58 20.22 12.04 20.22C10.67 20.22 9.33 19.88 8.14 19.22L7.85 19.07L4.69 20L5.64 16.94L5.48 16.69C4.77 15.46 4.39 14.06 4.39 12.62C4.39 12.38 4.39 12.15 4.41 11.92C4.41 7.35 8.12 3.67 12.05 3.67M9.25 6.75C9.07 6.75 8.79 6.82 8.56 7.07C8.33 7.32 7.68 7.97 7.68 9.28C7.68 10.59 8.63 11.86 8.76 12.04C8.89 12.22 10.62 14.88 13.26 16.03C13.89 16.3 14.39 16.47 14.77 16.59C15.4 16.79 15.97 16.76 16.42 16.7C16.92 16.62 17.97 16.06 18.19 15.44C18.4 14.81 18.4 14.28 18.34 14.17C18.28 14.06 18.12 14 17.87 13.88C17.62 13.75 16.38 13.14 16.15 13.06C15.92 12.97 15.75 12.93 15.58 13.18C15.41 13.43 14.93 14 14.78 14.17C14.63 14.34 14.48 14.36 14.23 14.23C13.97 14.11 13.14 13.84 12.16 12.96C11.4 12.28 10.88 11.44 10.73 11.19C10.58 10.94 10.71 10.8 10.84 10.68C10.95 10.56 11.1 10.37 11.23 10.22C11.35 10.06 11.4 9.94 11.48 9.78C11.56 9.62 11.52 9.47 11.46 9.35C11.4 9.22 10.88 7.95 10.66 7.42C10.45 6.9 10.23 6.97 10.07 6.97C9.91 6.97 9.73 6.96 9.55 6.96C9.46 6.96 9.35 6.75 9.25 6.75Z" />
+            </svg>
+            Contact Infrastructure Specialist
+        </a>
+    </section>
 </div>
 
 <footer>
