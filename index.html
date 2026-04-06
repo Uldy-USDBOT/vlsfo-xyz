@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VLSFO Terminal | Live USDT Price Index</title>
+    <style>
+        :root {
+            /* Exactly matching VLSFO.COM color palette */
+            --bg: #030508;
+            --accent: #00f2ff;
+            --card-bg: #0c111a;
+            --border: #1a2230;
+            --up: #00ff88;
+            --down: #ff3b3b;
+            --text-main: #e0e0e0;
+            --text-dim: #888;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* Top Live Ticker */
+        .ticker-wrap {
+            background: #000;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            overflow: hidden;
+        }
+        .ticker {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 40s linear infinite;
+        }
+        .ticker-item { padding: 0 40px; font-family: 'Roboto Mono', monospace; font-size: 0.85rem; }
+        .ticker-item span { color: var(--accent); margin-left: 8px; font-weight: bold; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Navigation */
+        header {
+            padding: 25px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(3, 5, 8, 0.95);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: white; }
+        .logo span { color: var(--accent); }
+        .status-pill { 
+            font-size: 0.75rem; color: var(--up); border: 1px solid var(--up); 
+            padding: 6px 15px; border-radius: 50px; display: flex; align-items: center; gap: 8px;
+        }
+        .dot { width: 6px; height: 6px; background: var(--up); border-radius: 50%; box-shadow: 0 0 10px var(--up); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* Main Dashboard Grid */
+        .dashboard {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        /* Price Table Container */
+        .terminal-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+        }
+        .terminal-box h2 { font-size: 1.3rem; margin-top: 0; border-left: 3px solid var(--accent); padding-left: 15px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th { text-align: left; color: var(--text-dim); font-size: 0.75rem; padding: 15px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 1px; }
+        td { padding: 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 1rem; }
+        
+        .port { font-weight: 700; color: #fff; }
+        .pair { color: var(--accent); background: rgba(0,242,255,0.08); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-family: 'Roboto Mono', monospace; }
+        .price { font-weight: 800; font-family: 'Roboto Mono', monospace; }
+        .up { color: var(--up); }
+        .down { color: var(--down); }
+
+        /* Sidebar Panel */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        
+        .widget {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+        }
+        .widget h3 { margin-top: 0; font-size: 1rem; color: #fff; margin-bottom: 15px; }
+
+        /* Settlement Logic Area */
+        .calc-box {
+            background: #000;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid rgba(0,242,255,0.2);
+        }
+        .calc-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
+        .calc-val { font-size: 1.6rem; color: var(--accent); font-weight: 800; font-family: 'Roboto Mono', monospace; }
+
+        .btn-action {
+            background: var(--accent);
+            color: #000;
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s ease;
+        }
+        .btn-action:hover { box-shadow: 0 0 30px rgba(0,242,255,0.4); transform: translateY(-2px); }
+
+        .back-nav { display: block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; text-align: center; }
+        .back-nav:hover { color: var(--accent); }
+
+        /* Mobile Adjustments */
+        @media (max-width: 950px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 15px; padding: 20px; }
+            .terminal-box { padding: 15px; }
+            td, th { padding: 12px 8px; font-size: 0.8rem; }
+            .btn-action { padding: 15px; font-size: 0.9rem; }
+            .calc-val { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+    <div class="ticker">
+        <div class="ticker-item">VLSFO/USDT <span>$644.25 (+1.21%)</span></div>
+        <div class="ticker-item">LSMGO/USDT <span>$814.10 (+0.85%)</span></div>
+        <div class="ticker-item">HSFO/USDT <span>$488.50 (-0.32%)</span></div>
+        <div class="ticker-item">BRENT CRUDE <span>$82.45 (+0.44%)</span></div>
+        <div class="ticker-item">USDT STABILITY <span>1.0001 (SECURE)</span></div>
+        <div class="ticker-item">ROTTERDAM PORT <span>ONLINE</span></div>
+        <div class="ticker-item">SINGAPORE HUB <span>ONLINE</span></div>
+    </div>
+</div>
+
+<header>
+    <div class="logo">VLSFO<span>.XYZ</span></div>
+    <div class="status-pill">
+        <div class="dot"></div>
+        NETWORK: LIVE ENCRYPTION
+    </div>
+</header>
+
+<div class="dashboard">
+    <main class="terminal-box">
+        <h2>Global Bunker Index (USDT)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Market Port</th>
+                    <th>Asset Pair</th>
+                    <th>Price/MT</th>
+                    <th>24H Trend</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="port">Rotterdam</td>
+                    <td><span class="pair">VLSFO/USDT</span></td>
+                    <td class="price">641.15</td>
+                    <td class="up">+1.45% ↗</td>
+                </tr>
+                <tr>
+                    <td class="port">Singapore</td>
+                    <td><span class="pair">VLSFO/USDT</span></td>
+                    <td class="price">658.30</td>
+                    <td class="up">+0.92% ↗</td>
+                </tr>
+                <tr>
+                    <td class="port">Fujairah</td>
+                    <td><span class="pair">VLSFO/USDT</span></td>
+                    <td class="price">645.50</td>
+                    <td class="down">-0.22% ↘</td>
+                </tr>
+                <tr>
+                    <td class="port">Houston</td>
+                    <td><span class="pair">VLSFO/USDT</span></td>
+                    <td class="price">637.80</td>
+                    <td class="down">-2.10% ↘</td>
+                </tr>
+                <tr>
+                    <td class="port">Gibraltar</td>
+                    <td><span class="pair">VLSFO/USDT</span></td>
+                    <td class="price">649.00</td>
+                    <td class="down">-0.05% ↘</td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <aside class="sidebar">
+        <div class="widget">
+            <h3>Web3 Settlement</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.5;">
+                Instant procurement for global fleets using USDT liquidity. Powered by smart contracts.
+            </p>
+            
+            <div class="calc-box">
+                <div class="calc-label">ESTIMATED TOTAL (1,000 MT)</div>
+                <div class="calc-val">644,200.00 USDT</div>
+            </div>
+            
+            <button class="btn-action" onclick="alert('Connecting to Web3 Payment Gateway...')">Connect Wallet</button>
+        </div>
+
+        <div class="widget" style="background: linear-gradient(135deg, #0c111a, #001f22);">
+            <h3>About This Terminal</h3>
+            <p style="font-size: 0.85rem; color: #bbb; line-height: 1.6;">
+                VLSFO.XYZ is the primary data node for the maritime fuel network, providing real-time pricing and Web3 settlement solutions for the 2030 digital trade era.
+            </p>
+            <a href="https://vlsfo.com" class="back-nav">← Back to Intelligence Center (VLSFO.COM)</a>
+        </div>
+    </aside>
+</div>
+
+<footer>
+    <p style="text-align: center; padding: 40px; color: #333; font-size: 0.75rem; letter-spacing: 1.5px;">
+        VLSFO.XYZ TERMINAL &copy; 2026 | CRYPTOGRAPHIC ENERGY DATA DEPLOYMENT
+    </p>
+</footer>
+
+</body>
+</html>
