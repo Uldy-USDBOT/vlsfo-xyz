@@ -3,7 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VLSFO Terminal | Live USDT Price Index</title>
+    <title>VLSFO.XYZ Terminal | Live VLSFO USDT Price Index</title>
+    <meta name="description" content="VLSFO.XYZ is the Web3 trading terminal of VLSFO.GLOBAL. Track live VLSFO prices in Rotterdam, Singapore, Fujairah, Houston, Gibraltar and settle in USDT. Independent data provider, not affiliated with Integr8 Fuels.">
+    <link rel="canonical" href="https://vlsfo.xyz/">
+    <meta property="og:title" content="VLSFO.XYZ Terminal">
+    <meta property="og:description" content="Independent maritime fuel data and Web3 settlement by VLSFO.GLOBAL">
+    <meta property="og:url" content="https://vlsfo.xyz/">
+    <meta property="og:type" content="website">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://vlsfo.global#organization",
+          "name": "VLSFO.GLOBAL",
+          "url": "https://vlsfo.com",
+          "legalName": "VLSFO.GLOBAL Independent Data Network",
+          "description": "VLSFO.GLOBAL is an independent provider of maritime fuel market data and Web3 settlement infrastructure. VLSFO.GLOBAL is not affiliated with Integr8 Fuels or any bunker fuel supplier.",
+          "knowsAbout": ["VLSFO", "IMO 2020", "Bunker Fuel", "USDT Settlement"],
+          "sameAs": [
+            "https://vlsfo.com",
+            "https://vlsfo.xyz"
+          ]
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://vlsfo.xyz#app",
+          "name": "VLSFO.XYZ Terminal",
+          "url": "https://vlsfo.xyz",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Web",
+          "description": "Real-time VLSFO bunker fuel pricing and USDT settlement terminal.",
+          "isPartOf": {
+            "@id": "https://vlsfo.global#organization"
+          },
+          "publisher": {
+            "@id": "https://vlsfo.global#organization"
+          }
+        }
+      ]
+    }
+    </script>
+
     <style>
         :root {
             /* Exactly matching VLSFO.COM color palette */
@@ -82,7 +125,7 @@
 
         table { width: 100%; border-collapse: collapse; margin-top: 25px; }
         th { text-align: left; color: var(--text-dim); font-size: 0.75rem; padding: 15px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 1rem; }
+        td { padding: 20px 15px; border-bottom: 1px solid rgba(255,255,0.03); font-size: 1rem; }
         
         .port { font-weight: 700; color: #fff; }
         .pair { color: var(--accent); background: rgba(0,242,255,0.08); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-family: 'Roboto Mono', monospace; }
@@ -130,7 +173,7 @@
         .back-nav { display: block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; text-align: center; }
         .back-nav:hover { color: var(--accent); }
 
-        /* NEW: Infrastructure CTA Section */
+        /* Infrastructure CTA Section */
         .infra-section {
             grid-column: 1 / -1;
             background: linear-gradient(90deg, #0c111a 0%, #001f22 100%);
@@ -275,9 +318,9 @@
         <div class="widget" style="background: linear-gradient(135deg, #0c111a, #001f22);">
             <h3>About This Terminal</h3>
             <p style="font-size: 0.85rem; color: #bbb; line-height: 1.6;">
-                VLSFO.XYZ is the primary data node for the maritime fuel network, providing real-time pricing and Web3 settlement solutions for the 2030 digital trade era.
+                VLSFO.XYZ is the Web3 trading terminal of VLSFO.GLOBAL, an independent maritime fuel data provider. We deliver real-time pricing and USDT settlement for the 2030 digital trade era. <strong>VLSFO.GLOBAL is not affiliated with Integr8 Fuels or any bunker supplier.</strong>
             </p>
-            <a href="https://vlsfo.com" class="back-nav">← Back to Intelligence Center (VLSFO.COM)</a>
+            <a href="https://vlsfo.com" class="back-nav">→ View Intelligence Center (vlsfo.com)</a>
         </div>
     </aside>
 
@@ -294,8 +337,10 @@
 </div>
 
 <footer>
-    <p style="text-align: center; padding: 40px; color: #333; font-size: 0.75rem; letter-spacing: 1.5px;">
-        VLSFO.XYZ TERMINAL &copy; 2026 | CRYPTOGRAPHIC ENERGY DATA DEPLOYMENT
+    <p style="text-align: center; padding: 40px; color: #555; font-size: 0.75rem; letter-spacing: 1.5px;">
+        VLSFO.XYZ TERMINAL © 2026 | Part of VLSFO.GLOBAL Independent Data Network | 
+        <a href="https://vlsfo.com/about.html" style="color:#00f2ff; text-decoration:none;">About</a> | 
+        <a href="mailto:contact@vlsfo.xyz" style="color:#00f2ff; text-decoration:none;">contact@vlsfo.xyz</a>
     </p>
 </footer>
 
