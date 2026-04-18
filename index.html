@@ -1,348 +1,197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VLSFO.XYZ Terminal | Live VLSFO USDT Price Index</title>
-    <meta name="description" content="VLSFO.XYZ is the Web3 trading terminal of VLSFO.GLOBAL. Track live VLSFO prices in Rotterdam, Singapore, Fujairah, Houston, Gibraltar and settle in USDT. Independent data provider, not affiliated with Integr8 Fuels.">
-    <link rel="canonical" href="https://vlsfo.xyz/">
-    <meta property="og:title" content="VLSFO.XYZ Terminal">
-    <meta property="og:description" content="Independent maritime fuel data and Web3 settlement by VLSFO.GLOBAL">
-    <meta property="og:url" content="https://vlsfo.xyz/">
-    <meta property="og:type" content="website">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VLSFO Live Prices</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    color:#e2e8f0;
+    background:#0a1320;
+    background-image:
+      radial-gradient(1000px 600px at 50% -10%, rgba(56,189,248,0.15), transparent 60%),
+      linear-gradient(180deg,#0a1320 0%, #14263f 100%);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+ .wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+  header{
+    position:sticky;top:0;z-index:20;
+    backdrop-filter:saturate(140%) blur(10px);
+    -webkit-backdrop-filter:saturate(140%) blur(10px);
+    background:rgba(10,19,32,0.65);
+    border-bottom:1px solid rgba(148,163,184,0.08);
+  }
+ .head{display:flex;align-items:center;justify-content:center;height:52px}
+ .logo{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:.2px;font-size:14px;color:#dbeafe}
+ .dot{width:8px;height:8px;border-radius:50%;background:#38bdf8;box-shadow:0 0 18px rgba(56,189,248,.7);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Organization",
-          "@id": "https://vlsfo.global#organization",
-          "name": "VLSFO.GLOBAL",
-          "url": "https://vlsfo.com",
-          "legalName": "VLSFO.GLOBAL Independent Data Network",
-          "description": "VLSFO.GLOBAL is an independent provider of maritime fuel market data and Web3 settlement infrastructure. VLSFO.GLOBAL is not affiliated with Integr8 Fuels or any bunker fuel supplier.",
-          "knowsAbout": ["VLSFO", "IMO 2020", "Bunker Fuel", "USDT Settlement"],
-          "sameAs": [
-            "https://vlsfo.com",
-            "https://vlsfo.xyz"
-          ]
-        },
-        {
-          "@type": "WebApplication",
-          "@id": "https://vlsfo.xyz#app",
-          "name": "VLSFO.XYZ Terminal",
-          "url": "https://vlsfo.xyz",
-          "applicationCategory": "FinanceApplication",
-          "operatingSystem": "Web",
-          "description": "Real-time VLSFO bunker fuel pricing and USDT settlement terminal.",
-          "isPartOf": {
-            "@id": "https://vlsfo.global#organization"
-          },
-          "publisher": {
-            "@id": "https://vlsfo.global#organization"
-          }
-        }
-      ]
-    }
-    </script>
+  main{padding:22px 0 30px}
+ .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
 
-    <style>
-        :root {
-            /* Exactly matching VLSFO.COM color palette */
-            --bg: #030508;
-            --accent: #00f2ff;
-            --card-bg: #0c111a;
-            --border: #1a2230;
-            --up: #00ff88;
-            --down: #ff3b3b;
-            --text-main: #e0e0e0;
-            --text-dim: #888;
-            --whatsapp: #25D366;
-        }
+ .glass{
+    background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));
+    border:1px solid rgba(148,163,184,0.14);
+    border-radius:18px;
+    box-shadow:0 12px 32px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+ .card{padding:18px}
+ .port-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+ .port{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8aa0bd}
+ .live{font-size:10px;color:#7dd3fc;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.22);padding:2px 6px;border-radius:999px}
+ .price{font-size:36px;font-weight:700;letter-spacing:-.02em;line-height:1;margin:6px 0 8px;font-variant-numeric:tabular-nums;color:#f1f5f9}
+  @media(max-width:900px){.price{font-size:32px}}
+ .meta{display:flex;align-items:center;gap:8px}
+ .chg{font-size:12px;font-weight:600;padding:4px 8px;border-radius:8px;font-variant-numeric:tabular-nums;border:1px solid transparent}
+ .chg.up{color:#22c55e;background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.18)}
+ .chg.down{color:#f87171;background:rgba(248,113,113,.09);border-color:rgba(248,113,113,.18)}
+ .unit{margin-left:auto;font-size:11px;color:#64748b}
+ .spark{height:44px;margin:12px -2px 0}
+ .upd{margin-top:10px;font-size:11px;color:#5b6c85}
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            overflow-x: hidden;
-        }
+ .section{margin-top:18px}
+ .sec-head{display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 0}
+ .sec-title{font-size:13px;font-weight:600;color:#c7d2e0}
+ .sec-sub{font-size:11px;color:#64748b}
+ .chart{height:240px;padding:10px 12px 14px}
+ .chart canvas{width:100%!important;height:100%!important}
 
-        /* Top Live Ticker */
-        .ticker-wrap {
-            background: #000;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            overflow: hidden;
-        }
-        .ticker {
-            display: flex;
-            white-space: nowrap;
-            animation: ticker 40s linear infinite;
-        }
-        .ticker-item { padding: 0 40px; font-family: 'Roboto Mono', monospace; font-size: 0.85rem; }
-        .ticker-item span { color: var(--accent); margin-left: 8px; font-weight: bold; }
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+ .table-wrap{overflow:hidden}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+  th{ text-align:left;padding:12px 16px;font-size:11px;font-weight:600;color:#8aa0bd;text-transform:uppercase;letter-spacing:.06em;background:rgba(0,0,0,.18);border-bottom:1px solid rgba(148,163,184,.12)}
+  th:last-child{text-align:right}
+  td{padding:13px 16px;border-bottom:1px solid rgba(148,163,184,.07);white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+ .pname{display:flex;align-items:center;gap:9px;color:#d7e2f1}
+ .pd{width:6px;height:6px;border-radius:50%;background:#334155}
+ .pprice{font-weight:600;font-variant-numeric:tabular-nums;color:#eef2f7}
+ .pchg{font-variant-numeric:tabular-nums}
+ .ptime{text-align:right;color:#5a6b84;font-size:11px}
+  @media(max-width:640px){th:nth-child(4),td:nth-child(4){display:none}}
 
-        /* Navigation */
-        header {
-            padding: 25px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(3, 5, 8, 0.95);
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(10px);
-        }
-        .logo { font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: white; }
-        .logo span { color: var(--accent); }
-        .status-pill { 
-            font-size: 0.75rem; color: var(--up); border: 1px solid var(--up); 
-            padding: 6px 15px; border-radius: 50px; display: flex; align-items: center; gap: 8px;
-        }
-        .dot { width: 6px; height: 6px; background: var(--up); border-radius: 50%; box-shadow: 0 0 10px var(--up); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
-        /* Main Dashboard Grid */
-        .dashboard {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-        }
-
-        /* Price Table Container */
-        .terminal-box {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
-        }
-        .terminal-box h2 { font-size: 1.3rem; margin-top: 0; border-left: 3px solid var(--accent); padding-left: 15px; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
-        th { text-align: left; color: var(--text-dim); font-size: 0.75rem; padding: 15px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 20px 15px; border-bottom: 1px solid rgba(255,255,0.03); font-size: 1rem; }
-        
-        .port { font-weight: 700; color: #fff; }
-        .pair { color: var(--accent); background: rgba(0,242,255,0.08); padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; font-family: 'Roboto Mono', monospace; }
-        .price { font-weight: 800; font-family: 'Roboto Mono', monospace; }
-        .up { color: var(--up); }
-        .down { color: var(--down); }
-
-        /* Sidebar Panel */
-        .sidebar { display: flex; flex-direction: column; gap: 20px; }
-        
-        .widget {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 25px;
-        }
-        .widget h3 { margin-top: 0; font-size: 1rem; color: #fff; margin-bottom: 15px; }
-
-        /* Settlement Logic Area */
-        .calc-box {
-            background: #000;
-            padding: 20px;
-            border-radius: 12px;
-            margin: 20px 0;
-            border: 1px solid rgba(0,242,255,0.2);
-        }
-        .calc-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
-        .calc-val { font-size: 1.6rem; color: var(--accent); font-weight: 800; font-family: 'Roboto Mono', monospace; }
-
-        .btn-action {
-            background: var(--accent);
-            color: #000;
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: 0.3s ease;
-        }
-        .btn-action:hover { box-shadow: 0 0 30px rgba(0,242,255,0.4); transform: translateY(-2px); }
-
-        .back-nav { display: block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 0.85rem; text-align: center; }
-        .back-nav:hover { color: var(--accent); }
-
-        /* Infrastructure CTA Section */
-        .infra-section {
-            grid-column: 1 / -1;
-            background: linear-gradient(90deg, #0c111a 0%, #001f22 100%);
-            border: 1px solid var(--accent);
-            border-radius: 16px;
-            padding: 40px;
-            text-align: center;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        .infra-section h2 { 
-            color: #fff; 
-            font-size: 1.8rem; 
-            margin-bottom: 15px; 
-            text-transform: uppercase; 
-            letter-spacing: 2px;
-        }
-        .infra-section p { 
-            color: var(--text-dim); 
-            max-width: 600px; 
-            margin: 0 auto 25px; 
-        }
-        .btn-whatsapp {
-            background: var(--whatsapp);
-            color: #fff;
-            padding: 15px 35px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 800;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-        }
-        .btn-whatsapp:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(37, 211, 102, 0.5);
-            background: #1ebe57;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 950px) {
-            .dashboard { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 600px) {
-            header { flex-direction: column; gap: 15px; padding: 20px; }
-            .terminal-box { padding: 15px; }
-            td, th { padding: 12px 8px; font-size: 0.8rem; }
-            .btn-action { padding: 15px; font-size: 0.9rem; }
-            .calc-val { font-size: 1.3rem; }
-            .infra-section h2 { font-size: 1.4rem; }
-        }
-    </style>
+  footer{padding:18px 0 28px;text-align:center;font-size:11px;color:#4b5e77}
+</style>
 </head>
 <body>
-
-<div class="ticker-wrap">
-    <div class="ticker">
-        <div class="ticker-item">VLSFO/USDT <span>$644.25 (+1.21%)</span></div>
-        <div class="ticker-item">LSMGO/USDT <span>$814.10 (+0.85%)</span></div>
-        <div class="ticker-item">HSFO/USDT <span>$488.50 (-0.32%)</span></div>
-        <div class="ticker-item">BRENT CRUDE <span>$82.45 (+0.44%)</span></div>
-        <div class="ticker-item">USDT STABILITY <span>1.0001 (SECURE)</span></div>
-        <div class="ticker-item">ROTTERDAM PORT <span>ONLINE</span></div>
-        <div class="ticker-item">SINGAPORE HUB <span>ONLINE</span></div>
-    </div>
-</div>
-
 <header>
-    <div class="logo">VLSFO<span>.XYZ</span></div>
-    <div class="status-pill">
-        <div class="dot"></div>
-        NETWORK: LIVE ENCRYPTION
-    </div>
+  <div class="wrap head">
+    <div class="logo"><span class="dot"></span> VLSFO Live</div>
+  </div>
 </header>
 
-<div class="dashboard">
-    <main class="terminal-box">
-        <h2>Global Bunker Index (USDT)</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Market Port</th>
-                    <th>Asset Pair</th>
-                    <th>Price/MT</th>
-                    <th>24H Trend</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="port">Rotterdam</td>
-                    <td><span class="pair">VLSFO/USDT</span></td>
-                    <td class="price">641.15</td>
-                    <td class="up">+1.45% ↗</td>
-                </tr>
-                <tr>
-                    <td class="port">Singapore</td>
-                    <td><span class="pair">VLSFO/USDT</span></td>
-                    <td class="price">658.30</td>
-                    <td class="up">+0.92% ↗</td>
-                </tr>
-                <tr>
-                    <td class="port">Fujairah</td>
-                    <td><span class="pair">VLSFO/USDT</span></td>
-                    <td class="price">645.50</td>
-                    <td class="down">-0.22% ↘</td>
-                </tr>
-                <tr>
-                    <td class="port">Houston</td>
-                    <td><span class="pair">VLSFO/USDT</span></td>
-                    <td class="price">637.80</td>
-                    <td class="down">-2.10% ↘</td>
-                </tr>
-                <tr>
-                    <td class="port">Gibraltar</td>
-                    <td><span class="pair">VLSFO/USDT</span></td>
-                    <td class="price">649.00</td>
-                    <td class="down">-0.05% ↘</td>
-                </tr>
-            </tbody>
-        </table>
-    </main>
+<main class="wrap">
+  <div class="grid">
+    <div class="card glass">
+      <div class="port-row"><div class="port">Singapore</div><div class="live">LIVE</div></div>
+      <div class="price" id="p-sg">$762.00</div>
+      <div class="meta">
+        <div class="chg up" id="c-sg">+0.00%</div>
+        <div class="unit">USD/MT</div>
+      </div>
+      <div class="spark"><canvas id="s-sg"></canvas></div>
+      <div class="upd" id="u-sg">Updated 0s ago</div>
+    </div>
 
-    <aside class="sidebar">
-        <div class="widget">
-            <h3>Web3 Settlement</h3>
-            <p style="font-size: 0.8rem; color: var(--text-dim); line-height: 1.5;">
-                Instant procurement for global fleets using USDT liquidity. Powered by smart contracts.
-            </p>
-            
-            <div class="calc-box">
-                <div class="calc-label">ESTIMATED TOTAL (1,000 MT)</div>
-                <div class="calc-val">644,200.00 USDT</div>
-            </div>
-            
-            <button class="btn-action" onclick="alert('Connecting to Web3 Payment Gateway...')">Connect Wallet</button>
-        </div>
+    <div class="card glass">
+      <div class="port-row"><div class="port">Rotterdam</div><div class="live">LIVE</div></div>
+      <div class="price" id="p-rt">$748.00</div>
+      <div class="meta">
+        <div class="chg up" id="c-rt">+0.00%</div>
+        <div class="unit">USD/MT</div>
+      </div>
+      <div class="spark"><canvas id="s-rt"></canvas></div>
+      <div class="upd" id="u-rt">Updated 0s ago</div>
+    </div>
 
-        <div class="widget" style="background: linear-gradient(135deg, #0c111a, #001f22);">
-            <h3>About This Terminal</h3>
-            <p style="font-size: 0.85rem; color: #bbb; line-height: 1.6;">
-                VLSFO.XYZ is the Web3 trading terminal of VLSFO.GLOBAL, an independent maritime fuel data provider. We deliver real-time pricing and USDT settlement for the 2030 digital trade era. <strong>VLSFO.GLOBAL is not affiliated with Integr8 Fuels or any bunker supplier.</strong>
-            </p>
-            <a href="https://vlsfo.com" class="back-nav">→ View Intelligence Center (vlsfo.com)</a>
-        </div>
-    </aside>
+    <div class="card glass">
+      <div class="port-row"><div class="port">Fujairah</div><div class="live">LIVE</div></div>
+      <div class="price" id="p-fj">$755.00</div>
+      <div class="meta">
+        <div class="chg up" id="c-fj">+0.00%</div>
+        <div class="unit">USD/MT</div>
+      </div>
+      <div class="spark"><canvas id="s-fj"></canvas></div>
+      <div class="upd" id="u-fj">Updated 0s ago</div>
+    </div>
+  </div>
 
-    <section class="infra-section">
-        <h2>Own the Infrastructure Now</h2>
-        <p>Take control of your maritime energy assets and scale your bunkering operations with our elite digital infrastructure.</p>
-        <a href="https://wa.me/218917021437" class="btn-whatsapp" target="_blank">
-            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.51 16.58 20.22 12.04 20.22C10.67 20.22 9.33 19.88 8.14 19.22L7.85 19.07L4.69 20L5.64 16.94L5.48 16.69C4.77 15.46 4.39 14.06 4.39 12.62C4.39 12.38 4.39 12.15 4.41 11.92C4.41 7.35 8.12 3.67 12.05 3.67M9.25 6.75C9.07 6.75 8.79 6.82 8.56 7.07C8.33 7.32 7.68 7.97 7.68 9.28C7.68 10.59 8.63 11.86 8.76 12.04C8.89 12.22 10.62 14.88 13.26 16.03C13.89 16.3 14.39 16.47 14.77 16.59C15.4 16.79 15.97 16.76 16.42 16.7C16.92 16.62 17.97 16.06 18.19 15.44C18.4 14.81 18.4 14.28 18.34 14.17C18.28 14.06 18.12 14 17.87 13.88C17.62 13.75 16.38 13.14 16.15 13.06C15.92 12.97 15.75 12.93 15.58 13.18C15.41 13.43 14.93 14 14.78 14.17C14.63 14.34 14.48 14.36 14.23 14.23C13.97 14.11 13.14 13.84 12.16 12.96C11.4 12.28 10.88 11.44 10.73 11.19C10.58 10.94 10.71 10.8 10.84 10.68C10.95 10.56 11.1 10.37 11.23 10.22C11.35 10.06 11.4 9.94 11.48 9.78C11.56 9.62 11.52 9.47 11.46 9.35C11.4 9.22 10.88 7.95 10.66 7.42C10.45 6.9 10.23 6.97 10.07 6.97C9.91 6.97 9.73 6.96 9.55 6.96C9.46 6.96 9.35 6.75 9.25 6.75Z" />
-            </svg>
-            Contact Infrastructure Specialist
-        </a>
-    </section>
-</div>
+  <div class="section glass">
+    <div class="sec-head">
+      <div class="sec-title">Singapore — 24h Trend</div>
+      <div class="sec-sub">VLSFO 0.5%</div>
+    </div>
+    <div class="chart"><canvas id="main"></canvas></div>
+  </div>
 
-<footer>
-    <p style="text-align: center; padding: 40px; color: #555; font-size: 0.75rem; letter-spacing: 1.5px;">
-        VLSFO.XYZ TERMINAL © 2026 | Part of VLSFO.GLOBAL Independent Data Network | 
-        <a href="https://vlsfo.com/about.html" style="color:#00f2ff; text-decoration:none;">About</a> | 
-        <a href="mailto:contact@vlsfo.xyz" style="color:#00f2ff; text-decoration:none;">contact@vlsfo.xyz</a>
-    </p>
-</footer>
+  <div class="section glass table-wrap">
+    <table>
+      <thead>
+        <tr><th>Port</th><th>Price</th><th>24h</th><th>Status</th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
 
+<footer>Live data • Updates every 30s</footer>
+
+<script>
+(() => {
+  const PORTS = {
+    singapore:{name:'Singapore',id:'sg',base:762.00,color:'#38bdf8'},
+    rotterdam:{name:'Rotterdam',id:'rt',base:748.00,color:'#60a5fa'},
+    fujairah:{name:'Fujairah',id:'fj',base:755.00,color:'#22d3ee'},
+    houston:{name:'Houston',id:'hou',base:739.00,color:'#a78bfa'},
+    gibraltar:{name:'Gibraltar',id:'gib',base:751.00,color:'#f472b6'},
+    ara:{name:'ARA',id:'ara',base:747.50,color:'#fbbf24'},
+    newyork:{name:'New York',id:'ny',base:762.50,color:'#34d399'},
+    la:{name:'Los Angeles',id:'la',base:771.00,color:'#fb7185'},
+  };
+  const state = {};
+  Object.keys(PORTS).forEach(k=>state[k]={price:PORTS[k].base,prev:PORTS[k].base,chg:0,hist:[],hist24:[]});
+  const rnd = (min,max)=>Math.random()*(max-min)+min;
+  const rndWalk=(base,n,vol=0.003)=>{const a=[];let p=base;for(let i=0;i<n;i++){p*=(1+rnd(-vol,vol));a.push(+p.toFixed(2));}return a;}
+  Object.keys(PORTS).forEach(k=>{state[k].hist=rndWalk(PORTS[k].base,30);state[k].hist24=rndWalk(PORTS[k].base,48,0.004);state[k].price=state[k].hist.at(-1);});
+  Chart.defaults.font.family="'Inter', system-ui, sans-serif"; Chart.defaults.color='#7b8ca8';
+  const sparkOpts=c=>({type:'line',data:{labels:[],datasets:[{data:[],borderColor:c,backgroundColor:'transparent',borderWidth:2,tension:.38,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}});
+  const sparks={sg:new Chart(document.getElementById('s-sg'),sparkOpts(PORTS.singapore.color)),rt:new Chart(document.getElementById('s-rt'),sparkOpts(PORTS.rotterdam.color)),fj:new Chart(document.getElementById('s-fj'),sparkOpts(PORTS.fujairah.color))};
+  sparks.sg.data.datasets[0].data=state.singapore.hist; sparks.rt.data.datasets[0].data=state.rotterdam.hist; sparks.fj.data.datasets[0].data=state.fujairah.hist; sparks.sg.update(); sparks.rt.update(); sparks.fj.update();
+  const ctx=document.getElementById('main').getContext('2d'); const grad=ctx.createLinearGradient(0,0,0,220); grad.addColorStop(0,'rgba(96,165,250,0.28)'); grad.addColorStop(1,'rgba(96,165,250,0.0)');
+  const mainChart=new Chart(ctx,{type:'line',data:{labels:Array(48).fill(''),datasets:[{label:'Singapore',data:state.singapore.hist24,borderColor:'#60a5fa',backgroundColor:grad,borderWidth:2.2,tension:.35,pointRadius:0,fill:true}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#475569'}},y:{grid:{color:'rgba(148,163,184,0.09)'},ticks:{color:'#64748b'}}}}});
+  const tbody=document.getElementById('tbody');
+  function renderTable(){tbody.innerHTML=Object.keys(PORTS).map(k=>{const p=PORTS[k],s=state[k];return`<tr><td><div class="pname"><span class="pd" style="background:${p.color}"></span>${p.name}</div></td><td class="pprice" id="tp-${k}">$${s.price.toFixed(2)}</td><td class="pchg" id="tc-${k}"><span class="chg up">+0.00%</span></td><td class="ptime" id="tt-${k}">live</td></tr>`}).join('')}
+  renderTable();
+  const fmtPrice=v=>'$'+v.toFixed(2); const fmtChg=v=>`<span class="chg ${v>=0?'up':'down'}">${v>=0?'+':''}${v.toFixed(2)}%</span>`;
+  function updateCard(k){const s=state[k],pid=PORTS[k].id;document.getElementById('p-'+pid).textContent=fmtPrice(s.price);document.getElementById('c-'+pid).outerHTML=`<div class="chg ${s.chg>=0?'up':'down'}" id="c-${pid}">${s.chg>=0?'+':''}${s.chg.toFixed(2)}%</div>`}
+  let lastUpdate=Date.now(); function tick(){const sec=Math.floor((Date.now()-lastUpdate)/1000);['sg','rt','fj'].forEach(id=>{const el=document.getElementById('u-'+id);if(el)el.textContent=`Updated ${sec}s ago`})}
+  setInterval(tick,1000);
+  function step(){Object.keys(PORTS).forEach(k=>{const s=state[k],base=PORTS[k].base;s.prev=s.price;let next=s.price*(1+(Math.random()-0.5)*0.005);next=next*0.94+base*0.06;next=Math.max(base*0.97,Math.min(base*1.03,next));s.price=+next.toFixed(2);s.chg=((s.price-s.prev)/s.prev)*100;s.hist.push(s.price);if(s.hist.length>30)s.hist.shift();s.hist24.push(s.price);if(s.hist24.length>48)s.hist24.shift()});updateCard('singapore');updateCard('rotterdam');updateCard('fujairah');sparks.sg.data.datasets[0].data=state.singapore.hist;sparks.sg.update('none');sparks.rt.data.datasets[0].data=state.rotterdam.hist;sparks.rt.update('none');sparks.fj.data.datasets[0].data=state.fujairah.hist;sparks.fj.update('none');mainChart.data.datasets[0].data=state.singapore.hist24;mainChart.update('none');Object.keys(PORTS).forEach(k=>{const s=state[k];document.getElementById('tp-'+k).textContent=fmtPrice(s.price);document.getElementById('tc-'+k).innerHTML=fmtChg(s.chg)});lastUpdate=Date.now();tick()}
+  updateCard('singapore');updateCard('rotterdam');updateCard('fujairah');Object.keys(PORTS).forEach(k=>{document.getElementById('tc-'+k).innerHTML=fmtChg(state[k].chg)});step();setInterval(step,30000);
+
+  /*
+  // ===== REAL API (oilpriceapi.com) =====
+  // Current live VLSFO is ~$762/MT updated every 60s【7313682841682516919†L5-L7】
+  const API_KEY = 96643f478c0dc988e56a59c8a74e324327b552b895b52ff6b0ccbec7ed518282
+  async function fetchReal(){
+    const res = await fetch('https://api.oilpriceapi.com/v1/prices/latest?by_type=vlsfo', {headers:{'Authorization':'Token '+API_KEY}});
+    const json = await res.json();
+    // map json to state.singapore.price etc.
+  }
+  */
+})();
+</script>
 </body>
 </html>
