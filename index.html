@@ -3,44 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VLSFO Hub Pro</title>
+<title>VLSFO GLOBAL</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;font-family:Arial;display:flex;background:#f4f7fb;}
-.sidebar{width:230px;background:#0b1d35;color:#fff;height:100vh;padding:20px;}
-.sidebar div{padding:12px;cursor:pointer;border-radius:6px;}
-.sidebar div:hover{background:#1d3557;}
-.main{flex:1;padding:20px;}
+body{
+    margin:0;
+    font-family:Arial;
+    display:flex;
+    background:#f4f7fb;
+}
+
+/* Sidebar */
+.sidebar{
+    width:240px;
+    background:#0b1d35;
+    color:#fff;
+    height:100vh;
+    padding:20px;
+}
+
+.sidebar h2{
+    margin-bottom:20px;
+}
+
+.sidebar div{
+    padding:12px;
+    margin-bottom:8px;
+    cursor:pointer;
+    border-radius:6px;
+}
+
+.sidebar div:hover{
+    background:#1d3557;
+}
+
+/* Main */
+.main{
+    flex:1;
+    padding:20px;
+}
+
+/* Pages */
 .page{display:none;}
 .active{display:block;}
-.card{background:#fff;padding:15px;border-radius:10px;margin:10px 0;}
-input,button{width:100%;padding:10px;margin:5px 0;}
-button{background:#0b1d35;color:#fff;border:none;}
-#map{height:500px;border-radius:10px;}
+
+/* Cards */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+.card{
+    background:#fff;
+    padding:15px;
+    border-radius:10px;
+}
+
+/* Inputs */
+input,button{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+}
+
+button{
+    background:#0b1d35;
+    color:#fff;
+    border:none;
+    cursor:pointer;
+}
+
+/* Map */
+#map{
+    height:500px;
+    border-radius:10px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- Sidebar -->
 <div class="sidebar">
-<h2>VLSFO Hub</h2>
-<div onclick="showPage('dashboard')">Dashboard</div>
-<div onclick="showPage('calculator')">Fuel Calculator</div>
-<div onclick="showPage('ports')">Ports Map</div>
+    <h2>VLSFO GLOBAL</h2>
+    <div onclick="showPage('dashboard')">Dashboard</div>
+    <div onclick="showPage('calculator')">Fuel Calculator</div>
+    <div onclick="showPage('ports')">Ports Map</div>
+    <div onclick="showPage('market')">Market</div>
 </div>
 
+<!-- Main -->
 <div class="main">
 
 <!-- Dashboard -->
 <div id="dashboard" class="page active">
-<h2>Dashboard</h2>
+<h2>Global Dashboard</h2>
 
-<div class="card">Live VLSFO Price: <span id="price"></span></div>
+<div class="cards">
+    <div class="card">Live Price: <b id="price"></b></div>
+    <div class="card">Market Trend: <b id="trend"></b></div>
+    <div class="card">Active Ports: 42</div>
+    <div class="card">Fuel Demand: High</div>
+</div>
+
+<br>
 <canvas id="chart"></canvas>
-
 </div>
 
 <!-- Calculator -->
@@ -48,8 +119,8 @@ button{background:#0b1d35;color:#fff;border:none;}
 <h2>Fuel Calculator</h2>
 
 <input type="number" id="power" placeholder="Engine Power (kW)">
-<input type="number" id="hours" placeholder="Hours">
-<input type="number" id="rate" value="180" placeholder="g/kWh">
+<input type="number" id="hours" placeholder="Operating Hours">
+<input type="number" id="rate" value="180" placeholder="Consumption g/kWh">
 
 <button onclick="calcFuel()">Calculate</button>
 
@@ -58,13 +129,24 @@ button{background:#0b1d35;color:#fff;border:none;}
 
 <!-- Ports -->
 <div id="ports" class="page">
-<h2>Smart Ports Map</h2>
+<h2>Global Bunkering Ports</h2>
 
 <input type="text" id="search" placeholder="Search port..." onkeyup="searchPort()">
 <button onclick="findNearest()">Find Nearest Port</button>
 
 <div id="map"></div>
 <h3 id="nearest"></h3>
+</div>
+
+<!-- Market -->
+<div id="market" class="page">
+<h2>Market Overview</h2>
+
+<div class="card">Asia Price: $<span id="asia"></span></div>
+<div class="card">Europe Price: $<span id="europe"></span></div>
+<div class="card">Middle East Price: $<span id="me"></span></div>
+<div class="card">USA Price: $<span id="usa"></span></div>
+
 </div>
 
 </div>
@@ -75,83 +157,101 @@ button{background:#0b1d35;color:#fff;border:none;}
 
 // Navigation
 function showPage(p){
-document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-document.getElementById(p).classList.add('active');
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    document.getElementById(p).classList.add('active');
 }
 
-// Fake Live Price
-let price = (570 + Math.random()*30).toFixed(2);
-document.getElementById("price").innerText = "$"+price;
+// Generate realistic prices (760 - 813)
+function randPrice(){
+    return (760 + Math.random()*53).toFixed(2);
+}
+
+// Set Prices
+document.getElementById("price").innerText = "$"+randPrice();
+document.getElementById("asia").innerText = randPrice();
+document.getElementById("europe").innerText = randPrice();
+document.getElementById("me").innerText = randPrice();
+document.getElementById("usa").innerText = randPrice();
+
+// Trend
+document.getElementById("trend").innerText =
+    (Math.random()*4-2).toFixed(2)+"%";
 
 // Chart
 new Chart(document.getElementById("chart"), {
-type:'line',
-data:{labels:["Mon","Tue","Wed","Thu","Fri"],
-datasets:[{data:[560,575,570,590,price],borderWidth:2}]}
+    type:'line',
+    data:{
+        labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+        datasets:[{
+            data:[
+                randPrice(),randPrice(),randPrice(),
+                randPrice(),randPrice(),randPrice(),randPrice()
+            ],
+            borderWidth:2
+        }]
+    }
 });
 
 // Calculator
 function calcFuel(){
-let p=power.value,h=hours.value,r=rate.value;
-let c=(p*h*r)/1000000;
-result.innerText="Consumption: "+c.toFixed(2)+" MT";
+    let p=power.value,h=hours.value,r=rate.value;
+    let c=(p*h*r)/1000000;
+    result.innerText="Consumption: "+c.toFixed(2)+" MT";
 }
 
 // Map
 var map=L.map('map').setView([25,10],2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// Ports
+// Ports Data
 var ports=[
-{name:"Singapore",lat:1.29,lng:103.85,price:585},
-{name:"Rotterdam",lat:51.92,lng:4.48,price:579},
-{name:"Fujairah",lat:25.13,lng:56.33,price:577},
-{name:"Houston",lat:29.73,lng:-95.27,price:583}
+{name:"Singapore",lat:1.29,lng:103.85,price:780},
+{name:"Rotterdam",lat:51.92,lng:4.48,price:770},
+{name:"Fujairah",lat:25.13,lng:56.33,price:765},
+{name:"Houston",lat:29.73,lng:-95.27,price:790}
 ];
 
 var markers=[];
 
 function renderPorts(list){
-markers.forEach(m=>map.removeLayer(m));
-markers=[];
-list.forEach(p=>{
-let color=p.price<580?"green":"red";
-let marker=L.circleMarker([p.lat,p.lng],{
-radius:8,color:color
-}).addTo(map)
-.bindPopup(`<b>${p.name}</b><br>Price: $${p.price}`);
-markers.push(marker);
-});
+    markers.forEach(m=>map.removeLayer(m));
+    markers=[];
+    list.forEach(p=>{
+        let color=p.price<780?"green":"red";
+        let marker=L.circleMarker([p.lat,p.lng],{
+            radius:8,color:color
+        }).addTo(map)
+        .bindPopup(`<b>${p.name}</b><br>Price: $${p.price}`);
+        markers.push(marker);
+    });
 }
-
 renderPorts(ports);
 
 // Search
 function searchPort(){
-let val=search.value.toLowerCase();
-let filtered=ports.filter(p=>p.name.toLowerCase().includes(val));
-renderPorts(filtered);
+    let val=search.value.toLowerCase();
+    let filtered=ports.filter(p=>p.name.toLowerCase().includes(val));
+    renderPorts(filtered);
 }
 
-// Nearest Port
+// Nearest
 function findNearest(){
 if(navigator.geolocation){
 navigator.geolocation.getCurrentPosition(pos=>{
-let userLat=pos.coords.latitude;
-let userLng=pos.coords.longitude;
+let uLat=pos.coords.latitude;
+let uLng=pos.coords.longitude;
 
 let nearestPort=null;
-let minDist=99999;
+let min=9999;
 
 ports.forEach(p=>{
 let d=Math.sqrt(
-Math.pow(userLat-p.lat,2)+Math.pow(userLng-p.lng,2)
+Math.pow(uLat-p.lat,2)+Math.pow(uLng-p.lng,2)
 );
-if(d<minDist){minDist=d;nearestPort=p;}
+if(d<min){min=d;nearestPort=p;}
 });
 
 nearest.innerText="Nearest Port: "+nearestPort.name+" ($"+nearestPort.price+")";
-
 map.setView([nearestPort.lat,nearestPort.lng],5);
 
 });
