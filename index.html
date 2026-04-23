@@ -1,264 +1,915 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VLSFO GLOBAL</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>VLSFO GLOBAL | Marine Fuel Intelligence</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-<style>
-body{
-    margin:0;
-    font-family:Arial;
-    display:flex;
-    background:#f4f7fb;
-}
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* Sidebar */
-.sidebar{
-    width:240px;
-    background:#0b1d35;
-    color:#fff;
-    height:100vh;
-    padding:20px;
-}
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a1929;
+      color: #e0e0e0;
+      display: flex;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+    }
 
-.sidebar h2{
-    margin-bottom:20px;
-}
+    /* Light mode overrides */
+    body.light {
+      background: #f4f7fb;
+      color: #1a1a2e;
+    }
 
-.sidebar div{
-    padding:12px;
-    margin-bottom:8px;
-    cursor:pointer;
-    border-radius:6px;
-}
+    /* Sidebar */
+    .sidebar {
+      width: 270px;
+      background: #0b1d35;
+      color: #fff;
+      height: 100vh;
+      padding: 25px 15px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+      transition: all 0.3s;
+      z-index: 100;
+    }
 
-.sidebar div:hover{
-    background:#1d3557;
-}
+    body.light .sidebar {
+      background: #ffffff;
+      color: #1e293b;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.05);
+    }
 
-/* Main */
-.main{
-    flex:1;
-    padding:20px;
-}
+    .sidebar .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 35px;
+      letter-spacing: 0.5px;
+      color: #ffb703;
+    }
 
-/* Pages */
-.page{display:none;}
-.active{display:block;}
+    body.light .sidebar .logo {
+      color: #0b1d35;
+    }
 
-/* Cards */
-.cards{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:15px;
-}
+    .sidebar .logo i {
+      font-size: 2rem;
+    }
 
-.card{
-    background:#fff;
-    padding:15px;
-    border-radius:10px;
-}
+    .sidebar nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
-/* Inputs */
-input,button{
-    width:100%;
-    padding:10px;
-    margin:5px 0;
-}
+    .sidebar .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.25s;
+      color: rgba(255,255,255,0.8);
+    }
 
-button{
-    background:#0b1d35;
-    color:#fff;
-    border:none;
-    cursor:pointer;
-}
+    body.light .sidebar .nav-item {
+      color: #334155;
+    }
 
-/* Map */
-#map{
-    height:500px;
-    border-radius:10px;
-}
-</style>
+    .sidebar .nav-item i {
+      width: 22px;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .sidebar .nav-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    body.light .sidebar .nav-item:hover {
+      background: #eef2ff;
+    }
+
+    .sidebar .nav-item.active {
+      background: #ffb703;
+      color: #0b1d35;
+      font-weight: 600;
+    }
+
+    body.light .sidebar .nav-item.active {
+      background: #0b1d35;
+      color: #ffffff;
+    }
+
+    .sidebar .theme-toggle {
+      margin-top: auto;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    body.light .sidebar .theme-toggle {
+      background: #f1f5f9;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 25px 30px;
+      transition: all 0.3s;
+    }
+
+    /* Pages */
+    .page {
+      display: none;
+      animation: fadeSlide 0.4s ease;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      0% { opacity: 0; transform: translateY(15px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards grid */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: #112240;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    body.light .stat-card {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+    }
+
+    .stat-card .label {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.7;
+    }
+
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 8px 0;
+      color: #ffb703;
+    }
+
+    .stat-card .change {
+      font-size: 0.9rem;
+    }
+
+    .positive { color: #2ecc71; }
+    .negative { color: #e74c3c; }
+
+    /* Chart containers */
+    .chart-box {
+      background: #112240;
+      padding: 25px;
+      border-radius: 18px;
+      margin: 25px 0;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    body.light .chart-box {
+      background: #ffffff;
+      border-color: #e2e8f0;
+    }
+
+    /* Inputs & Buttons */
+    .input-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 15px 0;
+    }
+
+    .input-field {
+      flex: 1 1 200px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #0d1b2a;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    body.light input, body.light select, body.light button {
+      background: #ffffff;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+
+    input:focus, select:focus {
+      border-color: #ffb703;
+      box-shadow: 0 0 0 3px rgba(255,183,3,0.2);
+    }
+
+    button {
+      background: #ffb703;
+      color: #0b1d35;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #faa307;
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: transparent;
+      border: 1px solid #ffb703;
+      color: #ffb703;
+    }
+
+    body.light button.secondary {
+      color: #0b1d35;
+      border-color: #0b1d35;
+    }
+
+    /* Result display */
+    .result-box {
+      background: linear-gradient(135deg, #0b1d35, #112240);
+      padding: 25px;
+      border-radius: 16px;
+      margin: 25px 0;
+      font-size: 1.2rem;
+      border-left: 5px solid #ffb703;
+      transition: all 0.3s;
+    }
+
+    body.light .result-box {
+      background: #f8fafc;
+      border-left-color: #0b1d35;
+    }
+
+    /* Map */
+    #map {
+      height: 480px;
+      border-radius: 16px;
+      margin: 20px 0;
+      z-index: 1;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Market table */
+    .market-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .market-table th, .market-table td {
+      text-align: left;
+      padding: 14px 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    body.light .market-table th, body.light .market-table td {
+      border-bottom-color: #e2e8f0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        padding: 15px;
+      }
+
+      .main {
+        padding: 20px;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Pulse animation for live indicator */
+    .pulse {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #2ecc71;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(46,204,113,0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(46,204,113,0); }
+      100% { box-shadow: 0 0 0 0 rgba(46,204,113,0); }
+    }
+
+    .notification-badge {
+      background: #e74c3c;
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+  </style>
 </head>
-
-<body>
+<body class="dark">
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <h2>VLSFO GLOBAL</h2>
-    <div onclick="showPage('dashboard')">Dashboard</div>
-    <div onclick="showPage('calculator')">Fuel Calculator</div>
-    <div onclick="showPage('ports')">Ports Map</div>
-    <div onclick="showPage('market')">Market</div>
+  <div class="logo">
+    <i class="fa-solid fa-ship"></i> VLSFO<span style="color:#ffb703;">GLOBAL</span>
+  </div>
+
+  <nav>
+    <div class="nav-item active" data-page="dashboard">
+      <i class="fa-solid fa-chart-pie"></i> Dashboard
+    </div>
+    <div class="nav-item" data-page="calculator">
+      <i class="fa-solid fa-calculator"></i> Fuel Calculator
+    </div>
+    <div class="nav-item" data-page="ports">
+      <i class="fa-solid fa-map-location-dot"></i> Ports Map
+    </div>
+    <div class="nav-item" data-page="market">
+      <i class="fa-solid fa-globe"></i> Market Overview
+    </div>
+  </nav>
+
+  <div class="theme-toggle" id="themeToggle">
+    <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
+  </div>
 </div>
 
-<!-- Main -->
+<!-- Main Content -->
 <div class="main">
 
-<!-- Dashboard -->
-<div id="dashboard" class="page active">
-<h2>Global Dashboard</h2>
+  <!-- Dashboard Page -->
+  <div id="dashboard" class="page active">
+    <h2 style="margin-bottom:20px;"><span class="pulse"></span> Live Bunker Intelligence</h2>
 
-<div class="cards">
-    <div class="card">Live Price: <b id="price"></b></div>
-    <div class="card">Market Trend: <b id="trend"></b></div>
-    <div class="card">Active Ports: 42</div>
-    <div class="card">Fuel Demand: High</div>
+    <div class="cards" id="dashboardCards">
+      <div class="stat-card">
+        <div class="label">VLSFO 0.5% (Global Avg)</div>
+        <div class="value" id="vlsfoPrice">--</div>
+        <div class="change" id="vlsfoChange">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">IFO 380 (Global Avg)</div>
+        <div class="value" id="ifoPrice">--</div>
+        <div class="change" id="ifoChange">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">MGO (Global Avg)</div>
+        <div class="value" id="mgoPrice">--</div>
+        <div class="change" id="mgoChange">--</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Active Bunkering Ports</div>
+        <div class="value">142</div>
+        <div class="change positive">+3 this week</div>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <h3><i class="fa-solid fa-chart-line"></i> 7-Day Price Trend (VLSFO)</h3>
+      <canvas id="trendChart" height="120"></canvas>
+    </div>
+
+    <div style="font-size:0.85rem; opacity:0.7; margin-top:15px;">
+      <i class="fa-solid fa-sync-alt fa-spin"></i> Updates every 30 seconds • Data simulated from major hubs
+    </div>
+  </div>
+
+  <!-- Calculator Page -->
+  <div id="calculator" class="page">
+    <h2 style="margin-bottom:20px;"><i class="fa-solid fa-ship"></i> Advanced Voyage Fuel Calculator</h2>
+
+    <div class="input-group">
+      <div class="input-field">
+        <label>Vessel Type</label>
+        <select id="vesselType">
+          <option value="container">Container Ship</option>
+          <option value="tanker">Tanker</option>
+          <option value="bulk">Bulk Carrier</option>
+          <option value="lng">LNG Carrier</option>
+        </select>
+      </div>
+      <div class="input-field">
+        <label>Number of Engines</label>
+        <input type="number" id="engines" value="1" min="1" max="10">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-field">
+        <label>Engine Power (kW per engine)</label>
+        <input type="number" id="power" value="15000" placeholder="e.g. 15000">
+      </div>
+      <div class="input-field">
+        <label>Operating Hours per Day</label>
+        <input type="number" id="hours" value="24" min="1" max="24">
+      </div>
+      <div class="input-field">
+        <label>Voyage Days</label>
+        <input type="number" id="days" value="20" min="1">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <div class="input-field">
+        <label>Consumption Rate (g/kWh)</label>
+        <input type="number" id="rate" value="180" step="0.1">
+      </div>
+      <div class="input-field">
+        <label>Fuel Type</label>
+        <select id="fuelType">
+          <option value="vlsfo">VLSFO 0.5%</option>
+          <option value="ifo">IFO 380</option>
+          <option value="mgo">MGO</option>
+        </select>
+      </div>
+      <div class="input-field">
+        <label>Currency</label>
+        <select id="currency">
+          <option value="USD">USD ($)</option>
+          <option value="EUR">EUR (€)</option>
+          <option value="AED">AED (د.إ)</option>
+          <option value="SGD">SGD (S$)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:15px; margin:20px 0;">
+      <button onclick="calculateFuel()"><i class="fa-solid fa-gas-pump"></i> Calculate</button>
+      <button class="secondary" onclick="resetCalculator()"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+    </div>
+
+    <div id="calcResult" class="result-box" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fa-solid fa-weight-hanging"></i> Total Bunker Needed:</span>
+        <strong id="totalFuelMT" style="font-size:1.8rem;">0.00 MT</strong>
+      </div>
+      <div style="margin-top:15px;">
+        <span>Estimated Cost (<span id="currencySymbol">$</span>):</span>
+        <strong id="totalCost" style="font-size:1.8rem; float:right;">0.00</strong>
+      </div>
+      <div style="margin-top:10px; font-size:0.9rem; opacity:0.8;">
+        Based on live <span id="fuelTypeLabel">VLSFO</span> price: <span id="unitPrice"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ports Map Page -->
+  <div id="ports" class="page">
+    <h2 style="margin-bottom:15px;"><i class="fa-solid fa-anchor"></i> Global Bunkering Ports</h2>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+      <input type="text" id="search" placeholder="Search port..." style="flex:2;">
+      <button onclick="searchPort()" style="flex:1;"><i class="fa-solid fa-search"></i> Search</button>
+      <button onclick="findNearestPort()" style="flex:1;" class="secondary"><i class="fa-solid fa-location-crosshairs"></i> Nearest</button>
+    </div>
+    <div id="map"></div>
+    <div id="nearestPortInfo" style="margin-top:12px; font-weight:500;"></div>
+  </div>
+
+  <!-- Market Overview Page -->
+  <div id="market" class="page">
+    <h2 style="margin-bottom:15px;"><i class="fa-solid fa-chart-simple"></i> Regional Price Benchmark</h2>
+    <div class="cards" id="marketCards">
+      <!-- dynamically filled -->
+    </div>
+    <div class="chart-box">
+      <h3>Price Comparison by Region</h3>
+      <canvas id="barChart" height="100"></canvas>
+    </div>
+    <div style="margin-top:20px;">
+      <strong>Global Weighted Average (VLSFO):</strong> <span id="globalAvg" style="color:#ffb703; font-size:1.5rem;">--</span>
+    </div>
+  </div>
+
 </div>
 
-<br>
-<canvas id="chart"></canvas>
-</div>
-
-<!-- Calculator -->
-<div id="calculator" class="page">
-<h2>Fuel Calculator</h2>
-
-<input type="number" id="power" placeholder="Engine Power (kW)">
-<input type="number" id="hours" placeholder="Operating Hours">
-<input type="number" id="rate" value="180" placeholder="Consumption g/kWh">
-
-<button onclick="calcFuel()">Calculate</button>
-
-<h3 id="result"></h3>
-</div>
-
-<!-- Ports -->
-<div id="ports" class="page">
-<h2>Global Bunkering Ports</h2>
-
-<input type="text" id="search" placeholder="Search port..." onkeyup="searchPort()">
-<button onclick="findNearest()">Find Nearest Port</button>
-
-<div id="map"></div>
-<h3 id="nearest"></h3>
-</div>
-
-<!-- Market -->
-<div id="market" class="page">
-<h2>Market Overview</h2>
-
-<div class="card">Asia Price: $<span id="asia"></span></div>
-<div class="card">Europe Price: $<span id="europe"></span></div>
-<div class="card">Middle East Price: $<span id="me"></span></div>
-<div class="card">USA Price: $<span id="usa"></span></div>
-
-</div>
-
-</div>
-
+<!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <script>
+  (function() {
+    // -------- GLOBAL STATE & PRICE ENGINE --------
+    const regions = [
+      { name: 'Singapore', lat: 1.29, lng: 103.85, baseVLSFO: 785, baseIFO: 520, baseMGO: 890 },
+      { name: 'Rotterdam', lat: 51.92, lng: 4.48, baseVLSFO: 770, baseIFO: 505, baseMGO: 870 },
+      { name: 'Fujairah', lat: 25.13, lng: 56.33, baseVLSFO: 760, baseIFO: 495, baseMGO: 860 },
+      { name: 'Houston', lat: 29.73, lng: -95.27, baseVLSFO: 790, baseIFO: 530, baseMGO: 900 },
+      { name: 'Gibraltar', lat: 36.11, lng: -5.35, baseVLSFO: 775, baseIFO: 510, baseMGO: 880 },
+      { name: 'Panama Canal', lat: 9.08, lng: -79.68, baseVLSFO: 800, baseIFO: 540, baseMGO: 920 },
+      { name: 'Busan', lat: 35.10, lng: 129.04, baseVLSFO: 788, baseIFO: 525, baseMGO: 895 },
+      { name: 'Santos', lat: -23.96, lng: -46.33, baseVLSFO: 810, baseIFO: 550, baseMGO: 930 },
+      { name: 'Durban', lat: -29.88, lng: 31.04, baseVLSFO: 795, baseIFO: 535, baseMGO: 910 },
+      { name: 'Los Angeles', lat: 33.73, lng: -118.26, baseVLSFO: 805, baseIFO: 545, baseMGO: 925 }
+    ];
 
-// Navigation
-function showPage(p){
-    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-    document.getElementById(p).classList.add('active');
-}
+    // Current prices (will be updated)
+    let currentPrices = regions.map(r => ({
+      ...r,
+      vlsfo: r.baseVLSFO,
+      ifo: r.baseIFO,
+      mgo: r.baseMGO
+    }));
 
-// Generate realistic prices (760 - 813)
-function randPrice(){
-    return (760 + Math.random()*53).toFixed(2);
-}
-
-// Set Prices
-document.getElementById("price").innerText = "$"+randPrice();
-document.getElementById("asia").innerText = randPrice();
-document.getElementById("europe").innerText = randPrice();
-document.getElementById("me").innerText = randPrice();
-document.getElementById("usa").innerText = randPrice();
-
-// Trend
-document.getElementById("trend").innerText =
-    (Math.random()*4-2).toFixed(2)+"%";
-
-// Chart
-new Chart(document.getElementById("chart"), {
-    type:'line',
-    data:{
-        labels:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
-        datasets:[{
-            data:[
-                randPrice(),randPrice(),randPrice(),
-                randPrice(),randPrice(),randPrice(),randPrice()
-            ],
-            borderWidth:2
-        }]
+    // Function to apply daily fluctuation (±2% max)
+    function fluctuatePrice(base) {
+      let change = (Math.random() * 4 - 2) * (base / 100); // ±2%
+      return +(base + change).toFixed(2);
     }
-});
 
-// Calculator
-function calcFuel(){
-    let p=power.value,h=hours.value,r=rate.value;
-    let c=(p*h*r)/1000000;
-    result.innerText="Consumption: "+c.toFixed(2)+" MT";
-}
+    function updateAllPrices() {
+      currentPrices = regions.map(r => ({
+        ...r,
+        vlsfo: fluctuatePrice(r.baseVLSFO),
+        ifo: fluctuatePrice(r.baseIFO),
+        mgo: fluctuatePrice(r.baseMGO)
+      }));
+    }
 
-// Map
-var map=L.map('map').setView([25,10],2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // Calculate global averages
+    function globalAverage(fuelType) {
+      let sum = currentPrices.reduce((acc, r) => acc + r[fuelType], 0);
+      return +(sum / currentPrices.length).toFixed(2);
+    }
 
-// Ports Data
-var ports=[
-{name:"Singapore",lat:1.29,lng:103.85,price:780},
-{name:"Rotterdam",lat:51.92,lng:4.48,price:770},
-{name:"Fujairah",lat:25.13,lng:56.33,price:765},
-{name:"Houston",lat:29.73,lng:-95.27,price:790}
-];
+    // -------- UI REFERENCES --------
+    const pages = document.querySelectorAll('.page');
+    const navItems = document.querySelectorAll('.nav-item');
 
-var markers=[];
+    // Navigation
+    function showPage(pageId) {
+      pages.forEach(p => p.classList.remove('active'));
+      document.getElementById(pageId).classList.add('active');
+      navItems.forEach(n => n.classList.remove('active'));
+      document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
 
-function renderPorts(list){
-    markers.forEach(m=>map.removeLayer(m));
-    markers=[];
-    list.forEach(p=>{
-        let color=p.price<780?"green":"red";
-        let marker=L.circleMarker([p.lat,p.lng],{
-            radius:8,color:color
-        }).addTo(map)
-        .bindPopup(`<b>${p.name}</b><br>Price: $${p.price}`);
-        markers.push(marker);
+      // special actions
+      if (pageId === 'ports') {
+        setTimeout(() => map.invalidateSize(), 100);
+      }
+      if (pageId === 'market') {
+        renderMarketPage();
+      }
+    }
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        showPage(item.dataset.page);
+      });
     });
-}
-renderPorts(ports);
 
-// Search
-function searchPort(){
-    let val=search.value.toLowerCase();
-    let filtered=ports.filter(p=>p.name.toLowerCase().includes(val));
-    renderPorts(filtered);
-}
+    // Theme toggle
+    const body = document.body;
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      body.classList.toggle('light');
+      const icon = themeToggle.querySelector('i');
+      const text = themeToggle.querySelector('span');
+      if (body.classList.contains('light')) {
+        icon.className = 'fa-solid fa-sun';
+        text.textContent = 'Light Mode';
+      } else {
+        icon.className = 'fa-solid fa-moon';
+        text.textContent = 'Dark Mode';
+      }
+    });
 
-// Nearest
-function findNearest(){
-if(navigator.geolocation){
-navigator.geolocation.getCurrentPosition(pos=>{
-let uLat=pos.coords.latitude;
-let uLng=pos.coords.longitude;
+    // -------- DASHBOARD LOGIC --------
+    const vlsfoPriceEl = document.getElementById('vlsfoPrice');
+    const vlsfoChangeEl = document.getElementById('vlsfoChange');
+    const ifoPriceEl = document.getElementById('ifoPrice');
+    const ifoChangeEl = document.getElementById('ifoChange');
+    const mgoPriceEl = document.getElementById('mgoPrice');
+    const mgoChangeEl = document.getElementById('mgoChange');
 
-let nearestPort=null;
-let min=9999;
+    let previousAverages = { vlsfo: 785, ifo: 520, mgo: 890 };
 
-ports.forEach(p=>{
-let d=Math.sqrt(
-Math.pow(uLat-p.lat,2)+Math.pow(uLng-p.lng,2)
-);
-if(d<min){min=d;nearestPort=p;}
-});
+    function updateDashboardCards() {
+      const avgVLSFO = globalAverage('vlsfo');
+      const avgIFO = globalAverage('ifo');
+      const avgMGO = globalAverage('mgo');
 
-nearest.innerText="Nearest Port: "+nearestPort.name+" ($"+nearestPort.price+")";
-map.setView([nearestPort.lat,nearestPort.lng],5);
+      vlsfoPriceEl.textContent = `$ ${avgVLSFO}`;
+      ifoPriceEl.textContent = `$ ${avgIFO}`;
+      mgoPriceEl.textContent = `$ ${avgMGO}`;
 
-});
-}
-}
+      const calcChange = (now, prev) => ((now - prev) / prev * 100).toFixed(2);
+      const vChange = calcChange(avgVLSFO, previousAverages.vlsfo);
+      const iChange = calcChange(avgIFO, previousAverages.ifo);
+      const mChange = calcChange(avgMGO, previousAverages.mgo);
 
+      vlsfoChangeEl.innerHTML = `${vChange}% ${vChange >= 0 ? '▲' : '▼'}`;
+      vlsfoChangeEl.className = `change ${vChange >= 0 ? 'positive' : 'negative'}`;
+      ifoChangeEl.innerHTML = `${iChange}% ${iChange >= 0 ? '▲' : '▼'}`;
+      ifoChangeEl.className = `change ${iChange >= 0 ? 'positive' : 'negative'}`;
+      mgoChangeEl.innerHTML = `${mChange}% ${mChange >= 0 ? '▲' : '▼'}`;
+      mgoChangeEl.className = `change ${mChange >= 0 ? 'positive' : 'negative'}`;
+
+      previousAverages = { vlsfo: avgVLSFO, ifo: avgIFO, mgo: avgMGO };
+    }
+
+    // Chart initialization
+    let trendChart;
+    function renderTrendChart() {
+      const ctx = document.getElementById('trendChart').getContext('2d');
+      const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      // Generate mock historical based on current average
+      const avgNow = globalAverage('vlsfo');
+      const dataPoints = [];
+      for (let i = 0; i < 7; i++) {
+        let variation = (Math.random() * 8) - 4; // ±4
+        dataPoints.push(+(avgNow + variation).toFixed(2));
+      }
+
+      if (trendChart) trendChart.destroy();
+      trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'VLSFO ($/MT)',
+            data: dataPoints,
+            borderColor: '#ffb703',
+            backgroundColor: 'rgba(255,183,3,0.1)',
+            borderWidth: 3,
+            tension: 0.3,
+            pointRadius: 5,
+            pointBackgroundColor: '#ffb703',
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function refreshDashboard() {
+      updateAllPrices();
+      updateDashboardCards();
+      renderTrendChart();
+    }
+
+    // -------- CALCULATOR --------
+    window.calculateFuel = function() {
+      const power = parseFloat(document.getElementById('power').value) || 0;
+      const hours = parseFloat(document.getElementById('hours').value) || 0;
+      const days = parseFloat(document.getElementById('days').value) || 0;
+      const rate = parseFloat(document.getElementById('rate').value) || 0;
+      const engines = parseInt(document.getElementById('engines').value) || 1;
+      const fuelType = document.getElementById('fuelType').value;
+      const currency = document.getElementById('currency').value;
+
+      const totalKwh = power * hours * days * engines;
+      const consumptionMT = (totalKwh * rate) / 1_000_000;
+
+      // Get current price based on fuel type (use global average)
+      let pricePerMT = 0;
+      if (fuelType === 'vlsfo') pricePerMT = globalAverage('vlsfo');
+      else if (fuelType === 'ifo') pricePerMT = globalAverage('ifo');
+      else if (fuelType === 'mgo') pricePerMT = globalAverage('mgo');
+
+      // Currency conversion (simplified rates)
+      const conversionRates = {
+        USD: 1,
+        EUR: 0.92,
+        AED: 3.67,
+        SGD: 1.35
+      };
+      const rateFactor = conversionRates[currency] || 1;
+      const cost = consumptionMT * pricePerMT * rateFactor;
+
+      document.getElementById('totalFuelMT').textContent = consumptionMT.toFixed(2) + ' MT';
+      document.getElementById('totalCost').textContent = cost.toFixed(2);
+      document.getElementById('currencySymbol').textContent = currency === 'USD' ? '$' : (currency==='EUR'?'€': (currency==='AED'?'د.إ':'S$'));
+      document.getElementById('fuelTypeLabel').textContent = fuelType.toUpperCase();
+      document.getElementById('unitPrice').textContent = `$ ${pricePerMT}/MT`;
+      document.getElementById('calcResult').style.display = 'block';
+    };
+
+    window.resetCalculator = function() {
+      document.getElementById('power').value = 15000;
+      document.getElementById('hours').value = 24;
+      document.getElementById('days').value = 20;
+      document.getElementById('rate').value = 180;
+      document.getElementById('engines').value = 1;
+      document.getElementById('calcResult').style.display = 'none';
+    };
+
+    // -------- MAP & PORTS --------
+    var map = L.map('map', { scrollWheelZoom: true }).setView([25, 10], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      subdomains: 'abcd',
+      maxZoom: 19
+    }).addTo(map);
+
+    var markersLayer = L.layerGroup().addTo(map);
+
+    function renderPortsOnMap(portList = currentPrices) {
+      markersLayer.clearLayers();
+      portList.forEach(p => {
+        const color = p.vlsfo < 780 ? '#2ecc71' : '#e74c3c';
+        const marker = L.circleMarker([p.lat, p.lng], {
+          radius: 9,
+          color: color,
+          fillColor: color,
+          fillOpacity: 0.8,
+          weight: 2
+        }).bindPopup(`
+          <b>${p.name}</b><br>
+          VLSFO: $${p.vlsfo}<br>
+          IFO380: $${p.ifo}<br>
+          MGO: $${p.mgo}
+        `);
+        markersLayer.addLayer(marker);
+      });
+    }
+
+    window.searchPort = function() {
+      const val = document.getElementById('search').value.toLowerCase();
+      const filtered = currentPrices.filter(p => p.name.toLowerCase().includes(val));
+      renderPortsOnMap(filtered.length ? filtered : currentPrices);
+      if (filtered.length === 1) {
+        map.setView([filtered[0].lat, filtered[0].lng], 5);
+      }
+    };
+
+    window.findNearestPort = function() {
+      if (!navigator.geolocation) {
+        alert('Geolocation not supported');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        const uLat = pos.coords.latitude;
+        const uLng = pos.coords.longitude;
+        let nearest = null;
+        let minDist = Infinity;
+
+        currentPrices.forEach(p => {
+          const d = Math.sqrt(Math.pow(uLat - p.lat, 2) + Math.pow(uLng - p.lng, 2));
+          if (d < minDist) {
+            minDist = d;
+            nearest = p;
+          }
+        });
+
+        if (nearest) {
+          document.getElementById('nearestPortInfo').innerHTML = 
+            `<i class="fa-solid fa-location-dot"></i> Nearest Port: <strong>${nearest.name}</strong> | VLSFO $${nearest.vlsfo}`;
+          map.setView([nearest.lat, nearest.lng], 6);
+        }
+      }, () => alert('Unable to retrieve location'));
+    };
+
+    // -------- MARKET PAGE --------
+    function renderMarketPage() {
+      const container = document.getElementById('marketCards');
+      container.innerHTML = '';
+
+      currentPrices.forEach(region => {
+        const prevVLSFO = previousAverages.vlsfo; // global prev, but we can simulate regional
+        const change = ((region.vlsfo - region.baseVLSFO) / region.baseVLSFO * 100).toFixed(2);
+        const card = document.createElement('div');
+        card.className = 'stat-card';
+        card.innerHTML = `
+          <div class="label">${region.name}</div>
+          <div class="value">$${region.vlsfo}</div>
+          <div class="change ${change >= 0 ? 'positive' : 'negative'}">${change}% ${change>=0?'▲':'▼'}</div>
+        `;
+        container.appendChild(card);
+      });
+
+      // Bar chart
+      const ctx = document.getElementById('barChart').getContext('2d');
+      if (window.barChartInstance) window.barChartInstance.destroy();
+      window.barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: currentPrices.map(r => r.name),
+          datasets: [{
+            label: 'VLSFO ($/MT)',
+            data: currentPrices.map(r => r.vlsfo),
+            backgroundColor: '#ffb703',
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      document.getElementById('globalAvg').textContent = `$ ${globalAverage('vlsfo')}`;
+    }
+
+    // Periodic update (every 30 sec)
+    setInterval(() => {
+      updateAllPrices();
+      if (document.getElementById('dashboard').classList.contains('active')) {
+        updateDashboardCards();
+        renderTrendChart();
+      }
+      if (document.getElementById('market').classList.contains('active')) {
+        renderMarketPage();
+      }
+      if (document.getElementById('ports').classList.contains('active')) {
+        renderPortsOnMap();
+      }
+      // update calculator live price if result visible
+      if (document.getElementById('calcResult').style.display === 'block') {
+        calculateFuel(); // recalc with new prices
+      }
+    }, 30000);
+
+    // Initial setup
+    updateAllPrices();
+    updateDashboardCards();
+    renderTrendChart();
+    renderPortsOnMap();
+    // Market initial render on demand
+
+    // Force map resize on tab show
+    document.querySelector('[data-page="ports"]').addEventListener('click', () => {
+      setTimeout(() => map.invalidateSize(), 150);
+    });
+
+    // Expose showPage globally if needed
+    window.showPage = showPage;
+  })();
 </script>
-
 </body>
 </html>
