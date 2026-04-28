@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | VLSFO.XYZ</title>
+    <style>
+        :root { --primary-color: #003366; --secondary-color: #4285F4; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 400px; }
+        h2 { color: var(--primary-color); margin-bottom: 20px; }
+        .input-group { margin-bottom: 15px; text-align: left; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        .btn-email { background: var(--primary-color); color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; font-size: 16px; margin-bottom: 15px; }
+        .btn-google { background: white; border: 1px solid #ddd; padding: 12px; width: 100%; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .btn-google img { width: 20px; margin-right: 10px; }
+        .error-msg { color: red; font-size: 14px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>VLSFO.XYZ Access</h2>
+    
+    <div class="input-group">
+        <input type="email" id="email" placeholder="Email Address">
+    </div>
+    <div class="input-group">
+        <input type="password" id="password" placeholder="Password">
+    </div>
+    <button class="btn-email" onclick="loginWithEmail()">Login with Email</button>
+
+    <div style="margin: 15px 0; color: #888;">OR</div>
+
+    <button class="btn-google" onclick="loginWithGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Sign in with Google
+    </button>
+
+    <p id="error" class="error-msg"></p>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+  // Your Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBXGYK1FSd25Ru2aoXFt7Ah2ELnrof4Shs",
+    authDomain: "vlsfo-3e338.firebaseapp.com",
+    projectId: "vlsfo-3e338",
+    storageBucket: "vlsfo-3e338.firebasestorage.app",
+    messagingSenderId: "45756829403",
+    appId: "1:45756829403:web:e040cbf1c62f2ca8e906fe",
+    measurementId: "G-6VPFMFFVFH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const googleProvider = new GoogleAuthProvider();
+
+  // Login with Google Function
+  window.loginWithGoogle = () => {
+    signInWithPopup(auth, googleProvider)
+      .then(() => window.location.href = "index.html")
+      .catch((error) => showError(error.message));
+  };
+
+  // Login with Email Function
+  window.loginWithEmail = () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => window.location.href = "index.html")
+      .catch((error) => showError(error.message));
+  };
+
+  function showError(msg) {
+    const errorEl = document.getElementById('error');
+    errorEl.innerText = msg;
+    errorEl.style.display = 'block';
+  }
+</script>
+
+</body>
+</html>
