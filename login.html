@@ -7,7 +7,6 @@
     <style>
         :root { 
             --primary-color: #003366; 
-            --secondary-color: #4285F4; 
             --bg-color: #f4f7f6;
             --error-color: #d9534f;
         }
@@ -30,14 +29,13 @@
             max-width: 380px; 
         }
         h2 { color: var(--primary-color); margin-bottom: 25px; }
-        .input-group { margin-bottom: 15px; text-align: left; }
         input { 
             width: 100%; 
             padding: 12px; 
+            margin-bottom: 15px; 
             border: 1px solid #ddd; 
             border-radius: 8px; 
             box-sizing: border-box; 
-            font-size: 14px;
         }
         .btn { 
             width: 100%; 
@@ -45,9 +43,8 @@
             border-radius: 8px; 
             cursor: pointer; 
             font-weight: bold; 
-            font-size: 15px; 
+            border: none; 
             margin-bottom: 10px;
-            border: none;
             transition: 0.3s;
         }
         .btn-login { background: var(--primary-color); color: white; }
@@ -58,19 +55,16 @@
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            color: #555;
         }
         .btn-google img { width: 18px; margin-right: 10px; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .divider { margin: 20px 0; color: #aaa; font-size: 12px; text-transform: uppercase; }
-        .error-msg { 
+        #error { 
             color: var(--error-color); 
             font-size: 13px; 
-            margin-top: 10px; 
             display: none; 
             background: #fdf7f7; 
             padding: 10px; 
             border-radius: 5px; 
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -78,33 +72,26 @@
 
 <div class="login-card">
     <h2>VLSFO.XYZ Access</h2>
-    
-    <div class="input-group">
-        <input type="email" id="email" placeholder="Email Address" required>
-    </div>
-    <div class="input-group">
-        <input type="password" id="password" placeholder="Password" required>
-    </div>
+    <input type="email" id="email" placeholder="Email Address">
+    <input type="password" id="password" placeholder="Password">
 
-    <button class="btn btn-login" onclick="loginWithEmail()">Login</button>
-    
-    <button class="btn btn-signup" onclick="signUpWithEmail()">Create New Account</button>
+    <button class="btn btn-login" id="loginBtn">Login</button>
+    <button class="btn btn-signup" id="signupBtn">Create New Account</button>
 
-    <div class="divider">OR</div>
+    <div style="margin: 20px 0; color: #aaa; font-size: 12px;">OR</div>
 
-    <button class="btn btn-google" onclick="loginWithGoogle()">
+    <button class="btn btn-google" id="googleBtn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
         Sign in with Google
     </button>
 
-    <p id="error" class="error-msg"></p>
+    <p id="error"></p>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  // Your Firebase Configuration (vlsfo-3e338)
   const firebaseConfig = {
     apiKey: "AIzaSyBXGYK1FSd25Ru2aoXFt7Ah2ELnrof4Shs",
     authDomain: "vlsfo-3e338.firebaseapp.com",
@@ -119,26 +106,24 @@
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // Google Login Function
-  window.loginWithGoogle = () => {
+  // الربط البرمجي للأزرار لضمان الاستجابة
+  document.getElementById('googleBtn').addEventListener('click', () => {
     signInWithPopup(auth, googleProvider)
       .then(() => window.location.href = "index.html")
-      .catch((error) => showError("Google Login Error: " + error.message));
-  };
+      .catch((error) => showError(error.message));
+  });
 
-  // Email Login Function
-  window.loginWithEmail = () => {
+  document.getElementById('loginBtn').addEventListener('click', () => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     if(!email || !password) return showError("Please enter email and password");
 
     signInWithEmailAndPassword(auth, email, password)
       .then(() => window.location.href = "index.html")
-      .catch((error) => showError("Login failed: Check your credentials"));
-  };
+      .catch(() => showError("Login failed: Check credentials"));
+  });
 
-  // Sign Up Function
-  window.signUpWithEmail = () => {
+  document.getElementById('signupBtn').addEventListener('click', () => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
@@ -149,8 +134,8 @@
 
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
-        alert("Account created successfully!");
-        window.location.href = "index.html"; 
+        alert("Account Created Successfully!");
+        window.location.href = "index.html";
       })
       .catch((error) => {
         if(error.code === 'auth/email-already-in-use') {
@@ -159,7 +144,7 @@
             showError(error.message);
         }
       });
-  };
+  });
 
   function showError(msg) {
     const errorEl = document.getElementById('error');
