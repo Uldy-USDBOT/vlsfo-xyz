@@ -124,8 +124,63 @@
       color: #ffffff;
     }
 
-    .sidebar .theme-toggle {
+    /* User info & logout */
+    .sidebar .user-section {
       margin-top: auto;
+      margin-bottom: 10px;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+    }
+
+    body.light .sidebar .user-section {
+      background: #f1f5f9;
+    }
+
+    .sidebar .user-section i {
+      font-size: 1.5rem;
+      color: #ffb703;
+    }
+
+    .sidebar .user-section .user-email {
+      flex: 1;
+      word-break: break-all;
+    }
+
+    .sidebar .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.8);
+      padding: 8px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      width: 100%;
+      text-align: center;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    body.light .sidebar .logout-btn {
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    .sidebar .logout-btn:hover {
+      background: #e74c3c;
+      border-color: #e74c3c;
+      color: white;
+    }
+
+    .sidebar .theme-toggle {
       padding: 12px;
       background: rgba(255,255,255,0.05);
       border-radius: 10px;
@@ -377,9 +432,37 @@
       border-radius: 20px;
       margin-left: 8px;
     }
+
+    /* Loading overlay for auth check */
+    #authLoading {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #0a1929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: #ffb703;
+      font-size: 1.5rem;
+      flex-direction: column;
+      gap: 20px;
+    }
+    #authLoading i {
+      font-size: 3rem;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body class="dark">
+
+<!-- 🔒 شاشة تحميل مؤقتة لحين التحقق من المصادقة -->
+<div id="authLoading">
+  <i class="fa-solid fa-circle-notch"></i>
+  <span>Verifying access...</span>
+</div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -401,6 +484,15 @@
       <i class="fa-solid fa-globe"></i> Market Overview
     </div>
   </nav>
+
+  <!-- 👤 قسم المستخدم وتسجيل الخروج -->
+  <div class="user-section" id="userSection">
+    <i class="fa-solid fa-circle-user"></i>
+    <span class="user-email" id="userEmail">--</span>
+  </div>
+  <button class="logout-btn" id="logoutBtn">
+    <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+  </button>
 
   <div class="theme-toggle" id="themeToggle">
     <i class="fa-solid fa-moon"></i> <span>Dark Mode</span>
@@ -557,6 +649,58 @@
 
 <!-- Scripts -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- 🔥 Firebase Auth (للحماية) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBXGYK1FSd25Ru2aoXFt7Ah2ELnrof4Shs",
+    authDomain: "vlsfo-3e338.firebaseapp.com",
+    projectId: "vlsfo-3e338",
+    storageBucket: "vlsfo-3e338.firebasestorage.app",
+    messagingSenderId: "45756829403",
+    appId: "1:45756829403:web:e040cbf1c62f2ca8e906fe",
+    measurementId: "G-6VPFMFFVFH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // 🛡️ التحقق من حالة المصادقة
+  const authLoading = document.getElementById('authLoading');
+
+  onAuthStateChanged(auth, (user) => {
+    // إخفاء شاشة التحميل
+    authLoading.style.display = 'none';
+
+    if (!user) {
+      // ❌ غير مسجّل الدخول → توجيه إلى صفحة الدخول
+      window.location.href = "login.html";
+    } else {
+      // ✅ مسجّل الدخول → عرض بياناته
+      document.getElementById('userEmail').textContent = user.email || user.displayName || 'User';
+      console.log("✅ Access granted:", user.email);
+    }
+  });
+
+  // 🔓 تسجيل الخروج
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      // بعد تسجيل الخروج، onAuthStateChanged سيتكفل بالتوجيه
+    } catch (error) {
+      console.error("Logout error:", error);
+      alert("Failed to sign out. Please try again.");
+    }
+  });
+
+  // تصدير auth ليستخدمه الكود الرئيسي إذا لزم
+  window.firebaseAuth = auth;
+</script>
+
+<!-- الكود الرئيسي للتطبيق (مغلف ليشتغل بعد التحقق) -->
 <script>
   (function() {
     // -------- GLOBAL STATE & PRICE ENGINE --------
