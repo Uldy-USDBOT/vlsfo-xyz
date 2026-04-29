@@ -11,7 +11,7 @@
             --error-bg: #fdf7f7;
             --success-color: #27ae60;
             --success-bg: #f0fff4;
-            --text-muted: #666;
+            --text-muted: #555;
         }
         * {
             box-sizing: border-box;
@@ -34,24 +34,28 @@
             box-shadow: 0 12px 28px rgba(0,0,0,0.08);
             text-align: center;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
         
-        /* Site Branding & Description */
-        .brand-header {
+        /* Site Definition Section */
+        .site-branding {
             margin-bottom: 2rem;
         }
-        h2 {
+        .site-branding h2 {
             color: var(--primary-color);
             font-weight: 700;
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 26px;
+            margin-bottom: 10px;
         }
-        .site-description {
+        .site-definition {
             font-size: 14px;
             color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 10px;
+            line-height: 1.6;
+            background: #f9fbfc;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            text-align: left;
         }
 
         input {
@@ -167,10 +171,10 @@
 <body>
 
 <div class="login-card">
-    <div class="brand-header">
+    <div class="site-branding">
         <h2>🔐 VLSFO.XYZ</h2>
-        <p class="site-description">
-            The world's leading specialized platform for <strong>Very Low Sulfur Fuel Oil</strong> data, global supply tracking, and maritime fuel solutions.
+        <p class="site-definition">
+            An <strong>independent provider</strong> of maritime fuel market data, delivering <strong>live bunker rates</strong> and AI-driven intelligence for global ports including Houston, Singapore, and Rotterdam.
         </p>
     </div>
 
@@ -207,6 +211,7 @@
     sendPasswordResetEmail
   } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
+  // Firebase Configuration (vlsfo-3e338 project)
   const firebaseConfig = {
     apiKey: "AIzaSyBXGYK1FSd25Ru2aoXFt7Ah2ELnrof4Shs",
     authDomain: "vlsfo-3e338.firebaseapp.com",
@@ -271,9 +276,11 @@
     setButtonsDisabled(true);
     try {
       await sendPasswordResetEmail(auth, email);
-      showMessage("Password reset link sent! Check your inbox.", "success");
+      showMessage("Reset link sent! Check your email inbox.", "success");
     } catch (error) {
-      showMessage("Error: " + error.message, "error");
+      let msg = "Could not send reset email.";
+      if (error.code === 'auth/user-not-found') msg = "No account found with this email.";
+      showMessage(msg, "error");
     } finally {
       setButtonsDisabled(false);
     }
@@ -295,7 +302,7 @@
     hideMessage();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    if (!email || !password) { showMessage("Please enter email and password."); return; }
+    if (!email || !password) { showMessage("Please provide both email and password."); return; }
     const loginBtn = document.getElementById('loginBtn');
     setButtonsDisabled(true);
     setButtonLoading(loginBtn, true, "Signing in...");
@@ -308,12 +315,12 @@
     hideMessage();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-    if (!email || !password) { showMessage("Please fill all fields."); return; }
+    if (!email || !password) { showMessage("Please fill all fields to sign up."); return; }
     const signupBtn = document.getElementById('signupBtn');
     setButtonsDisabled(true);
     setButtonLoading(signupBtn, true, "Creating Account...");
     try { await createUserWithEmailAndPassword(auth, email, password); goToDashboard(); }
-    catch (error) { showMessage("Signup failed: " + error.message); }
+    catch (error) { showMessage("Signup failed: " + error.code); }
     finally { setButtonsDisabled(false); setButtonLoading(signupBtn, false); }
   });
 
