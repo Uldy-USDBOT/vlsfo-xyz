@@ -9,6 +9,9 @@
             --primary-color: #003366;
             --bg-color: #f4f7f6;
             --error-bg: #fdf7f7;
+            --success-color: #27ae60;
+            --success-bg: #f0fff4;
+            --text-muted: #666;
         }
         * {
             box-sizing: border-box;
@@ -26,18 +29,31 @@
         }
         .login-card {
             background: white;
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: 16px;
             box-shadow: 0 12px 28px rgba(0,0,0,0.08);
             text-align: center;
             width: 100%;
             max-width: 400px;
         }
-        h2 {
-            margin-bottom: 1.5rem;
-            color: var(--primary-color);
-            font-weight: 600;
+        
+        /* Site Branding & Description */
+        .brand-header {
+            margin-bottom: 2rem;
         }
+        h2 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .site-description {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
         input {
             width: 100%;
             padding: 12px 14px;
@@ -53,6 +69,22 @@
             border-color: var(--primary-color);
             background: white;
         }
+        
+        .forgot-link-container {
+            text-align: right;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+        .forgot-link {
+            font-size: 13px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
         .btn {
             width: 100%;
             padding: 12px;
@@ -112,26 +144,42 @@
             height: 1px;
             background: #e0e0e0;
         }
-        #errorBox {
-            color: #c0392b;
+        
+        #messageBox {
             font-size: 13px;
             margin-top: 14px;
             padding: 10px;
             border-radius: 8px;
-            background: var(--error-bg);
             display: none;
             text-align: left;
             word-break: break-word;
+        }
+        .error-msg {
+            color: #c0392b;
+            background: var(--error-bg);
+        }
+        .success-msg {
+            color: var(--success-color);
+            background: var(--success-bg);
         }
     </style>
 </head>
 <body>
 
 <div class="login-card">
-    <h2>🔐 Access VLSFO.XYZ</h2>
+    <div class="brand-header">
+        <h2>🔐 VLSFO.XYZ</h2>
+        <p class="site-description">
+            The world's leading specialized platform for <strong>Very Low Sulfur Fuel Oil</strong> data, global supply tracking, and maritime fuel solutions.
+        </p>
+    </div>
 
     <input type="email" id="email" placeholder="Email Address" autocomplete="email">
     <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+
+    <div class="forgot-link-container">
+        <a href="#" class="forgot-link" id="forgotPasswordBtn">Forgot Password?</a>
+    </div>
 
     <button class="btn btn-login" id="loginBtn">Sign In</button>
     <button class="btn btn-signup" id="signupBtn">Create Account</button>
@@ -143,7 +191,7 @@
         Sign in with Google
     </button>
 
-    <div id="errorBox"></div>
+    <div id="messageBox"></div>
 </div>
 
 <script type="module">
@@ -155,10 +203,10 @@
     getRedirectResult,
     GoogleAuthProvider,
     signInWithEmailAndPassword,
-    createUserWithEmailAndPassword
+    createUserWithEmailAndPassword,
+    sendPasswordResetEmail
   } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  // ==================== الإعدادات ====================
   const firebaseConfig = {
     apiKey: "AIzaSyBXGYK1FSd25Ru2aoXFt7Ah2ELnrof4Shs",
     authDomain: "vlsfo-3e338.firebaseapp.com",
@@ -173,28 +221,27 @@
   const auth = getAuth(app);
   const googleProvider = new GoogleAuthProvider();
 
-  // ==================== دوال مساعدة ====================
-  function showError(message) {
-    const box = document.getElementById('errorBox');
-    box.textContent = `❌ ${message}`;
+  function showMessage(message, type = 'error') {
+    const box = document.getElementById('messageBox');
+    box.textContent = type === 'error' ? `❌ ${message}` : `✅ ${message}`;
+    box.className = type === 'error' ? 'error-msg' : 'success-msg';
     box.style.display = 'block';
   }
 
-  function hideError() {
-    const box = document.getElementById('errorBox');
+  function hideMessage() {
+    const box = document.getElementById('messageBox');
     box.style.display = 'none';
   }
 
-  // تعطيل/تفعيل الأزرار أثناء الطلب
   function setButtonsDisabled(disabled) {
     document.getElementById('loginBtn').disabled = disabled;
     document.getElementById('signupBtn').disabled = disabled;
     document.getElementById('googleBtn').disabled = disabled;
+    document.getElementById('forgotPasswordBtn').style.pointerEvents = disabled ? 'none' : 'auto';
   }
 
-  // حفظ الحالة الأصلية للنص
   const originalTexts = {};
-  function setButtonLoading(button, isLoading, loadingText = "Please wait...") {
+  function setButtonLoading(button, isLoading, loadingText = "Processing...") {
     if (!originalTexts[button.id]) {
       originalTexts[button.id] = button.textContent.trim();
     }
@@ -205,141 +252,73 @@
     return /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
   }
 
-  // الانتقال بعد نجاح الدخول
   function goToDashboard() {
     window.location.href = "index.html";
   }
 
-  // ==================== التعامل مع نتائج إعادة التوجيه (redirect) ====================
-  // يفحص عند تحميل الصفحة إذا كان هناك نتيجة redirect (قادم من Google mobile)
   getRedirectResult(auth)
-    .then((result) => {
-      if (result) {
-        // نجح الدخول عبر redirect
-        goToDashboard();
-      }
-    })
-    .catch((error) => {
-      showError(error.message);
-    });
+    .then((result) => { if (result) goToDashboard(); })
+    .catch((error) => showMessage(error.message));
 
-  // ==================== تسجيل الدخول عبر Google ====================
-  document.getElementById('googleBtn').addEventListener('click', async () => {
-    hideError();
-    const googleBtn = document.getElementById('googleBtn');
+  document.getElementById('forgotPasswordBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    hideMessage();
+    const email = document.getElementById('email').value.trim();
+    if (!email) {
+      showMessage("Please enter your email to reset password.", "error");
+      return;
+    }
     setButtonsDisabled(true);
-    setButtonLoading(googleBtn, true, "Connecting...");
-
     try {
-      if (isMobileDevice()) {
-        // على الجوال: نستخدم redirect لأنه أفضل من popup
-        await signInWithRedirect(auth, googleProvider);
-        // سيتم إعادة تحميل الصفحة بعد redirect، وسيلتقط getRedirectResult العملية
-      } else {
-        // سطح المكتب: popup
-        await signInWithPopup(auth, googleProvider);
-        goToDashboard();
-      }
+      await sendPasswordResetEmail(auth, email);
+      showMessage("Password reset link sent! Check your inbox.", "success");
     } catch (error) {
-      // إذا فشل popup (مثل popup-closed-by-user) نحاول redirect كخطة بديلة
-      if (error.code === 'auth/popup-closed-by-user') {
-        showError("You closed the login popup. Please try again.");
-      } else if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-blocked') {
-        // ربما المتصفح منع النافذة، ننتقل للـ redirect
-        try {
-          await signInWithRedirect(auth, googleProvider);
-        } catch (redirectError) {
-          showError(redirectError.message);
-        }
-      } else {
-        showError(error.message);
-      }
+      showMessage("Error: " + error.message, "error");
     } finally {
       setButtonsDisabled(false);
-      setButtonLoading(googleBtn, false);
     }
   });
 
-  // ==================== تسجيل الدخول بالبريد وكلمة المرور ====================
+  document.getElementById('googleBtn').addEventListener('click', async () => {
+    hideMessage();
+    const googleBtn = document.getElementById('googleBtn');
+    setButtonsDisabled(true);
+    setButtonLoading(googleBtn, true, "Redirecting...");
+    try {
+      if (isMobileDevice()) await signInWithRedirect(auth, googleProvider);
+      else { await signInWithPopup(auth, googleProvider); goToDashboard(); }
+    } catch (error) { showMessage(error.message); }
+    finally { setButtonsDisabled(false); setButtonLoading(googleBtn, false); }
+  });
+
   document.getElementById('loginBtn').addEventListener('click', async () => {
-    hideError();
+    hideMessage();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-      showError("Please enter both email and password.");
-      return;
-    }
-
+    if (!email || !password) { showMessage("Please enter email and password."); return; }
     const loginBtn = document.getElementById('loginBtn');
     setButtonsDisabled(true);
     setButtonLoading(loginBtn, true, "Signing in...");
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      goToDashboard();
-    } catch (error) {
-      // رسالة خطأ واضحة للمستخدم
-      let friendlyMsg = "Login failed. Please check your credentials.";
-      if (error.code === 'auth/user-not-found') {
-        friendlyMsg = "No account found with this email.";
-      } else if (error.code === 'auth/wrong-password') {
-        friendlyMsg = "Incorrect password. Please try again.";
-      } else if (error.code === 'auth/invalid-email') {
-        friendlyMsg = "Invalid email format.";
-      } else if (error.code === 'auth/too-many-requests') {
-        friendlyMsg = "Too many attempts. Please wait and try again.";
-      }
-      showError(friendlyMsg);
-    } finally {
-      setButtonsDisabled(false);
-      setButtonLoading(loginBtn, false);
-    }
+    try { await signInWithEmailAndPassword(auth, email, password); goToDashboard(); }
+    catch (error) { showMessage("Login failed. Check your credentials."); }
+    finally { setButtonsDisabled(false); setButtonLoading(loginBtn, false); }
   });
 
-  // ==================== إنشاء حساب جديد ====================
   document.getElementById('signupBtn').addEventListener('click', async () => {
-    hideError();
+    hideMessage();
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
-
-    if (!email || !password) {
-      showError("Please fill all fields to create an account.");
-      return;
-    }
-
-    if (password.length < 6) {
-      showError("Password must be at least 6 characters long.");
-      return;
-    }
-
+    if (!email || !password) { showMessage("Please fill all fields."); return; }
     const signupBtn = document.getElementById('signupBtn');
     setButtonsDisabled(true);
-    setButtonLoading(signupBtn, true, "Creating account...");
-
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      // الحساب أنشئ بنجاح، توجيه مباشر (يمكن إضافة تنبيه)
-      goToDashboard();
-    } catch (error) {
-      let msg = "Account creation failed.";
-      if (error.code === 'auth/email-already-in-use') {
-        msg = "An account with this email already exists. Please login instead.";
-      } else if (error.code === 'auth/invalid-email') {
-        msg = "Invalid email address.";
-      } else if (error.code === 'auth/weak-password') {
-        msg = "Password is too weak (minimum 6 characters).";
-      }
-      showError(msg);
-    } finally {
-      setButtonsDisabled(false);
-      setButtonLoading(signupBtn, false);
-    }
+    setButtonLoading(signupBtn, true, "Creating Account...");
+    try { await createUserWithEmailAndPassword(auth, email, password); goToDashboard(); }
+    catch (error) { showMessage("Signup failed: " + error.message); }
+    finally { setButtonsDisabled(false); setButtonLoading(signupBtn, false); }
   });
 
-  // إخفاء الخطأ عند الكتابة مجدداً
-  document.getElementById('email').addEventListener('input', hideError);
-  document.getElementById('password').addEventListener('input', hideError);
+  document.getElementById('email').addEventListener('input', hideMessage);
+  document.getElementById('password').addEventListener('input', hideMessage);
 </script>
 
 </body>
